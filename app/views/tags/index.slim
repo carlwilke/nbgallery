@@ -1,0 +1,9 @@
+div.content-container
+  h1 Tags
+  hr.divider
+  div.tag-index
+    -sorted_tag_array = @tags.sort {|a,b| b[1] <=> a[1] }
+    -sorted_tag_array.each do |tag, count|
+      a.nounderline href="#{tag_path(tag)}"
+        span.label.tag.tooltips style='background-color: #{color_for(tag)}' title='See Notebooks with tag: "#{tag}"' aria-label='See Notebooks with tag: "#{tag}"' ==tag
+        span.badge.searchResultTag.tooltips title="#{count} Notebooks" aria-label="#{count} Notebooks" ==count

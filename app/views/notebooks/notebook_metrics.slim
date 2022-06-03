@@ -1,0 +1,150 @@
+==render partial: "notebook_info_jumbotron"
+div.content-container
+  div.return
+    a href="#{notebook_path(@notebook)}"
+      i.fa.fa-share aria-hidden="true"
+      | Return to Notebook
+  div.pop-ups.row
+    div.col-lg-3.col-md-6
+      div.panel.panel-primary
+        div.panel-heading
+          div.row
+            div.col-xs-3
+              i.glyphicon.glyphicon-eye-open
+            div.col-xs-9.text-right
+              div.huge ==@unique_viewers.size
+              div #{@unique_viewers.values.map{|x| x[:count]}.sum} views by #{@unique_viewers.size} users
+          a.modal-activate id="notebookViewsMetricButton" href="#" data-target="#metricsViews" data-toggle="modal"
+            div.panel-footer
+              span.pull-left View Details
+              span.sr-only
+                |  of Notebook Views by User
+              span.pull-right
+                i.glyphicon.glyphicon.expand
+              div.clearfix
+    div.col-lg-3.col-md-6
+      div.panel.panel-green
+        div.panel-heading
+          div.row
+            div.col-xs-3
+              i.glyphicon.glyphicon-play-circle
+            div.col-xs-9.text-right
+              div.huge ==@unique_runners.size
+              div #{@unique_runners.values.map{|x| x[:count]}.sum} runs by #{@unique_runners.size} users
+          a.modal-activate id="notebookRunsMetricButton" href="#" data-target="#metricsRuns" data-toggle="modal"
+            div.panel-footer
+              span.pull-left View Details
+              span.sr-only
+                |  of Notebook Runs by User
+              span.pull-right
+                i.glyphicon.glyphicon.expand
+              div.clearfix
+    div.col-lg-3.col-md-6
+      div.panel.panel-yellow
+        div.panel-heading
+          div.row
+            div.col-xs-3
+              i.glyphicon.glyphicon-star
+            div.col-xs-9.text-right
+              div.huge ==@stars.count
+              div Stars
+          a.modal-activate id="notebookStarsMetricButton" href="#" data-target="#metricsStars" data-toggle="modal"
+            div.panel-footer
+              span.pull-left View Details
+              span.sr-only
+                |  of who has Starred this Notebook
+              span.pull-right
+                i.glyphicon.glyphicon.expand
+              div.clearfix
+    div.col-lg-3.col-md-6
+      div.panel.panel-red
+        div.panel-heading
+          div.row
+            div.col-xs-3
+              i.glyphicon.glyphicon-calendar
+            div.col-xs-9.text-right
+              div.huge ==@edit_history.count
+              div Edit History
+          a.modal-activate id="notebookEditsMetricButton" href="#" data-target="#metricsEdits" data-toggle="modal"
+            div.panel-footer
+              span.pull-left View Details
+              span.sr-only
+                |  of this Notebook's Edit History
+              span.pull-right
+                i.glyphicon.glyphicon.expand
+              div.clearfix
+  div.row id="metricsHealth"
+    div.col-md-12
+      div.panel.panel-primary
+        div.panel.panel-heading
+          h2.panel-title Cell executions by day, last 30 days
+        -if @executions_by_day.blank?
+          div.panel.panel-body No executions recorded
+        -else
+          =column_chart(@executions_by_day, stacked: true, colors: chart_colors_blue_red)
+  div.row
+    div.col-md-6
+      div.panel.panel-primary
+        div.panel.panel-heading
+          h2.panel-title Cell executions by cell number, last 30 days
+        -if @executions_by_cell.blank?
+          div.panel.panel-body No executions recorded
+        -else
+          =column_chart(@executions_by_cell, stacked: true, colors: chart_colors_blue_red)
+    div.col-md-6
+      div.panel.panel-primary
+        div.panel.panel-heading
+          h2.panel-title Average runtime (seconds) by cell number, last 30 days
+        -if @runtime_by_cell.blank?
+          div.panel.panel-body No executions recorded
+        -else
+          =column_chart(@runtime_by_cell)
+  div.row
+    div.col-md-6
+      div.panel.panel-primary
+        div.panel.panel-heading
+          h2.panel-title Health metrics, last 30 days
+        -if @health_status[:score]
+          table.table.tabular
+            caption.sr-only Health Metrics in last 30 days
+            tr
+              th Health status
+              td ==@health_status[:status]
+            tr
+              th Health score
+              td #{(@health_status[:score] * 100).truncate}%
+            tr
+              th Total cell executions
+              td ==@health_status[:executions]
+            tr
+              th Average executions per cell
+              td #{"%.1f" % (@health_status[:executions].to_f / @health_status[:total_cells])}
+            tr
+              th Unique users
+              td ==@health_status[:users]
+            tr
+              th Usage factor (UF)
+              td #{(@health_status[:usage_factor] * 100).truncate}%
+            tr
+              th Cell execution overall success rate (OSR)
+              td #{(@health_status[:overall_success_rate] * 100).truncate}%
+            tr
+              th Good cell ratio (GCR)
+              td #{(@health_status[:good_cell_ratio] * 100).truncate}%
+            tr
+              th Bad cell ratio (BCR)
+              td #{(@health_status[:bad_cell_ratio] * 100).truncate}%
+            tr
+              th Average notebook execution depth (NED)
+              td #{(@health_status[:notebook_execution_depth] * 100).truncate}%
+            tr
+              th Average first failure depth (FFD)
+              td #{(@health_status[:first_failure_depth] * 100).truncate}%
+            tr
+              th Last good cell (LGC)
+              td #{(@health_status[:last_good_cell] * 100).truncate}%
+            tr
+              th First bad cell (FBC)
+              td #{(@health_status[:first_bad_cell] * 100).truncate}%
+        -else
+          div.panel.panel-body ==@health_status[:description]

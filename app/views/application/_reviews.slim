@@ -1,0 +1,195 @@
+-revisions_found = false
+-num_types = 0
+-num_types += 1 if GalleryConfig.reviews.technical.enabled
+-num_types += 1 if GalleryConfig.reviews.functional.enabled
+-num_types += 1 if GalleryConfig.reviews.compliance.enabled
+-sorted_array = reviews.sort {|a,b| b.updated_at <=> a.updated_at }
+-sorted_array.each do |review|
+  -if review.revision_id != nil
+    -revisions_found = true
+    -break
+-if !GalleryConfig.reviews_enabled
+  div.center
+    p Reviews not enabled
+-elsif num_types == 0
+  div.center
+    p No types of reviews enabled
+-elsif reviews.empty?
+  div.center
+    p No reviews
+-elsif request.path != reviews_path
+  table.clean-table.review-table.responsive
+    caption.sr-only Reviews for Notebook
+    thead
+      tr
+        th Notebook
+        -if revisions_found
+          th Revision
+        th Review Type
+        th Status
+        th Reviewer
+        th Time
+        th Comment
+    tbody
+      -sorted_array = reviews.sort {|a,b| b.updated_at <=> a.updated_at }
+      -sorted_array.each do |review|
+        -if !review.notebook.public? && !(@user.admin? || @user.can_edit?(review.notebook))
+          -next
+        -else
+          tr
+            td
+              -if !review.notebook.public? && (@user.admin? || @user.can_edit?(review.notebook))
+                ==image_tag("Lock.png", class: "tagLogoLock tooltips tooltipstered show-inline", title: "This notebook is private", aria: {"hidden": true}, style:"display: none")
+                span.sr-only
+                  ' Private Notebook
+              ==link_to_notebook(review.notebook)
+            -if revisions_found
+              td
+                -if review.revision_id != nil
+                  -if review.recent?
+                    | Current
+                  -else
+                    ==link_to_revision(review.revision)
+            td ==GalleryConfig.reviews[review.revtype].label
+            td ==link_to(review.status, review_path(review))
+            td ==link_to_user(review.reviewer) if review.reviewer
+            td data-sort="#{review.updated_at}" ==render partial: "time_ago", locals: {time: review.updated_at}
+            -if review.comments.to_s[0..22] == "Automatically nominated"
+              td.tooltips title="#{review.comments}" Automatically nominated
+            -elsif review.comments == nil || review.comments.length < 2
+              td.tooltips.none-cell
+                span aria-hidden="true" #{"("}
+                | none
+                span aria-hidden="true" #{")"}
+            -else
+              td.tooltips title="#{review.comments}"
+                span.show aria-hidden="true" style="display: none" ==truncate(review.comments, length: 100)
+                span.sr-only #{review.comments}
+-else
+
+  table.clean-table.responsive id="allReviewsTable"
+    caption.sr-only All Reviews
+    thead
+      tr
+        th rowspan="2" Notebook
+        -if revisions_found
+          th.revisions-column rowspan="2" Revision
+        th colspan="#{num_types}" Review
+        th rowspan="2" Last Updated
+        th rowspan="2" Last Comment
+      tr
+        -if GalleryConfig.reviews.technical.enabled
+          th style="min-width: unset" ==GalleryConfig.reviews.technical.label.capitalize
+        -if GalleryConfig.reviews.functional.enabled
+          th style="min-width: unset" ==GalleryConfig.reviews.functional.label.capitalize
+        -if GalleryConfig.reviews.compliance.enabled
+          th style="min-width: unset" ==GalleryConfig.reviews.compliance.label.capitalize
+    tbody
+      -if GalleryConfig.notebook_title_parse.parsing_enabled
+        -sorted_array = reviews.order(:created_at).sort {|a,b| a.notebook.title.partition(GalleryConfig.notebook_title_parse.after_character)[2].downcase <=> b.notebook.title.partition(GalleryConfig.notebook_title_parse.after_character)[2].downcase }
+      -else
+        -sorted_array = reviews.order(:created_at).sort {|a,b| a.notebook.title.downcase <=> b.notebook.title.downcase }
+      -indexed_array = []
+      -sorted_array.length.times { indexed_array.push(false) }
+      -sorted_array.each_with_index do |review_row, index|
+        -if !review_row.notebook.public? && !(@user.admin? || @user.can_edit?(review_row.notebook))
+          -indexed_array[index] = true
+          -next
+        -elsif indexed_array[index] || (review_row.revtype != "technical" && review_row.revtype != "functional")
+          -next
+        -else
+          tr
+            -if GalleryConfig.notebook_title_parse.parsing_enabled
+              -notebook_title_sort = review_row.notebook.title.partition(GalleryConfig.notebook_title_parse.after_character)[2].downcase
+            -else
+              -notebook_title_sort = review_row.notebook.title
+            td data-sort="#{render partial: GalleryConfig.slim.table_notebook_title_text_only, locals: { notebook: review_row.notebook }}"
+              ==render partial: GalleryConfig.slim.table_row_heading_label, locals: { notebook: review_row.notebook }
+              -if !review_row.notebook.public? && (@user.admin? || @user.can_edit?(review.notebook))
+                ==image_tag("Lock.png", class: "tagLogoLock tooltips tooltipstered show-inline", title: "This notebook is private", aria: {"hidden": true}, style:"display: none")
+                span.sr-only
+                  ' Private Notebook
+              a.review-page-title href="#{notebook_path(review_row.notebook)}" title="#{review_row.notebook.title}"
+                ==render partial: GalleryConfig.slim.table_notebook_title_text_only, locals: { notebook: review_row.notebook }
+            -if revisions_found
+              td
+                -if review_row.revision_id != nil
+                  -if review_row.recent?
+                    | Current
+                  -else
+                    ==link_to_revision(review_row.revision)
+            -technical_review = nil
+            -functional_review = nil
+            -compliance_review = nil
+            -if review_row.revtype == "technical"
+              -technical_review = review_row
+              -indexed_array[index] = true
+              -sorted_array.each_with_index do |review_other, index_inner|
+                -if review_other.notebook.title == review_row.notebook.title && (review_row.revision_id == nil || review_row.revision_id == review_other.revision_id)
+                  -if review_other.revtype == "functional"
+                    -indexed_array[index_inner] = true;
+                    -functional_review = review_other
+                  -elsif review_other.revtype == "compliance"
+                    -indexed_array[index_inner] = true
+                    -compliance_review = review_other
+                  -if technical_review && compliance_review
+                    -break
+            -elsif review_row.revtype == "functional"
+              -functional_review = review_row
+              -indexed_array[index] = true
+              -sorted_array.each_with_index do |review_other, index_inner|
+                -if review_other.notebook.title == review_row.notebook.title && (review_row.revision_id == nil || review_row.revision_id == review_other.revision_id)
+                  -if review_other.revtype == "technical"
+                    -indexed_array[index_inner] = true
+                    -technical_review = review_other
+                  -elsif review_other.revtype == "compliance"
+                    -indexed_array[index_inner] = true
+                    -compliance_review = review_other
+                  -if technical_review && compliance_review
+                    -break
+            -elsif review_row.revtype == "compliance"
+              -compliance_review = review_row
+              -indexed_array[index] = true
+              -sorted_array.each_with_index do |review_other, index_inner|
+                -if review_other.notebook.title == review_row.notebook.title && (review_row.revision_id == nil || review_row.revision_id == review_other.revision_id)
+                  -if review_other.revtype == "technical"
+                    -indexed_array[index_inner] = true
+                    -technical_review = review_other
+                  -elsif review_other.revtype == "functional"
+                    -indexed_array[index_inner] = true
+                    -functional_review = review_other
+                  -if technical_review && functional_review
+                    -break
+            -if GalleryConfig.reviews.technical.enabled
+              -if technical_review
+                td
+                  a.tooltip-right href="#{review_path(technical_review)}" title=(technical_review.status != "queued" ? "#{technical_review.status.capitalize} on #{review_row.updated_at.strftime("%A, %B %d, %Y %H:%M UTC")}" : "Queued on #{technical_review.updated_at.strftime("%A, %B %d, %Y %H:%M UTC")}")
+                    ==technical_review.status
+              -else
+                td
+            -if GalleryConfig.reviews.functional.enabled
+              -if functional_review
+                td
+                  a.tooltip-right href="#{review_path(functional_review)}" title=(functional_review.status != "queued" ? "#{functional_review.status.capitalize} on #{functional_review.updated_at.strftime("%A, %B %d, %Y %H:%M UTC")}" : "Queued on #{functional_review.updated_at.strftime("%A, %B %d, %Y %H:%M UTC")}")
+                    ==functional_review.status
+              -else
+                td
+            -if GalleryConfig.reviews.compliance.enabled
+              -if compliance_review
+                td
+                  a.tooltip-right href="#{review_path(compliance_review)}" title=(compliance_review.status != "queued" ? "#{compliance_review.status.capitalize} on #{compliance_review.updated_at.strftime("%A, %B %d, %Y %H:%M UTC")}" : "Queued on #{compliance_review.updated_at.strftime("%A, %B %d, %Y %H:%M UTC")}")
+                    ==compliance_review.status
+              -else
+                td
+            td data-sort="#{review_row.updated_at}" ==render partial: "time_ago", locals: {time: review_row.updated_at}
+            -if review_row.comments.to_s[0..22] == "Automatically nominated"
+              td.tooltips title="#{review_row.comments}" Automatically nominated
+            -elsif review_row.comments == nil || review_row.comments.length < 2
+              td.tooltips.none-cell
+                span aria-hidden="true" #{"("}
+                | none
+                span aria-hidden="true" #{")"}
+            -else
+              td.tooltips title="#{review_row.comments}"
+                span.show aria-hidden="true" style="display: none" ==truncate(review_row.comments, length: 100)
+                span.sr-only #{review_row.comments}

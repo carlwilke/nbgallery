@@ -1,0 +1,63 @@
+## Local settings
+*.local.yml
+.env
+.bundle
+/vendor/bundle
+/vendor/cache
+*.key
+*.pem
+
+## DS Store be banished
+.DS_Store
+
+## Gallery data directories
+/data/
+/cache/
+/staging/
+/change_requests/
+.nbgallery_git_lock
+
+## log files
+log/
+
+## DB files
+/solr/
+/db/schema.rb
+
+## Docker
+/docker/data/
+/docker/log/
+/docker/bundle/
+
+## tmp
+tmp/
+
+## Custom Slim files
+/app/views/application/_custom*.slim
+/app/views/static_pages/_custom*.slim
+/app/views/notebooks/_custom*.slim
+/app/views/modals/custom/*.slim
+
+## Custom assets
+/app/assets/javascripts/custom/*
+/app/assets/stylesheets/custom/*
+/app/assets/images/custom_images/*
+
+## Custom Integration
+/public/integration/custom*.js
+
+## Video files
+/app/assets/images/custom*.mp4
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+## Intellij IDEA
+out/
+.idea
+*.iws
+*.iml
+modules.xml
+*.ipr

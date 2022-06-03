@@ -1,0 +1,38 @@
+div.content-container
+  h1.center Notebook Summary
+  br
+  div.row
+    div.col-md-6
+      div.panel.panel-primary
+        div.panel.panel-heading
+          h2.panel-title Notebooks
+        table.table.tabular.centered-table
+          caption.sr-only Public verse Private Notebooks
+          thead
+            tr
+              th Total
+              th Public
+              th Private
+          tbody
+            tr
+              td ==@total_notebooks
+              td ==@public_count
+              td ==@private_count
+    div.col-md-6
+      div.panel.panel-primary
+        div.panel.panel-heading
+          h2.panel-title Authors (#{@total_authors})
+        table.table.tabular.centered-table
+          caption.sr-only Authors and their number of notebook
+          thead
+            tr
+              th Name
+              th Notebooks
+          tbody
+            -@notebooks_info.each do |key, value|
+              -if key != nil
+                tr
+                  td
+                    a href="#{summary_user_path(key.id)}" ==key.name
+                  td
+                    a href="#{user_path(key.id)}" ==value

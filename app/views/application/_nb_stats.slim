@@ -1,0 +1,8 @@
+div.nb-stats.tags.mouseoveredit
+  ==render partial: "notebook_metadata_metrics", locals: { notebook: notebook }
+  -if defined? group_view
+    ==link_to "",
+      group_path + "/landing" + "?notebook_id=#{notebook.uuid}",
+      method: :patch,
+      class: "span glyphicon glyphicon-plus-sign tooltips action-icon view-summary",
+      title: "Make this notebook the landing page for this group"

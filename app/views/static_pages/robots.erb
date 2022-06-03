@@ -1,0 +1,24 @@
+User-agent: *
+Crawl-delay: 10
+Disallow: <%= admin_path %>
+Disallow: <%= admin_path + "/" %>
+Disallow: <%= change_requests_path %>
+Disallow: <%= change_requests_path + "/" %>
+Disallow: <%= home_notebooks_path %>
+Disallow: <%= beta_home_notebooks_path %>
+Disallow: <%= preferences_path %>
+Disallow: <%= preferences_path + "/" %>
+Disallow: <%= stages_path %>
+Disallow: <%= stages_path + "/" %>
+Disallow: /rss
+Disallow: /rss.xml
+Disallow: /warning
+Disallow: /warning/
+<% @notebooks.find_each do |nb| %>
+Allow: <%= notebook_path(nb) %>
+Disallow: <%= notebook_revisions_path(nb) %>
+Disallow: <%= notebook_revisions_path(nb) + '/' %>
+Disallow: /notebook/<%= nb.uuid %>
+Disallow: /notebooks/<%= nb.uuid %>
+<% end %>
+Disallow: /nb/

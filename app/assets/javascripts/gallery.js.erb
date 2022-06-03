@@ -1,0 +1,1433 @@
+$(document).ready(function(){
+
+  /* ===================================== */
+  /* ==== Helper Functions/Variables ===== */
+  /* ===================================== */
+  // Helper function for bootbox pending alerts
+  bootboxPending = function(text){
+    bootbox.dialog({
+      message: '<div class="center"><strong>' + text + '</strong></div> <div class="progress progress-striped active"><div class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%">',
+      closeButton: false,
+      className: 'loading-modal'
+    });
+  }
+
+  /* ===================================== */
+  /* ======= Header Functionality ======== */
+  /* ===================================== */
+  $('#mobileNavContainer').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#mobileNavContainer').click();
+    }
+  });
+  $('#mobileNavContainer').click(function(e) {
+    e.preventDefault();
+    $(this).toggleClass('expand');
+    $('#mobileNavDropdown').toggleClass('open');
+    if($(this).hasClass('expand')){
+      $('#mobileNavDropdown').css("display","block");
+      $('#mobileNavDropdownAriaLabel').text('Collapse More Menu');
+    }
+    else {
+      $('#mobileNavDropdown').css("display","none");
+      $('#mobileNavDropdownAriaLabel').text('Expand More Menu');
+    }
+    toggleAriaExpanded(this);
+    closeLearnDropdown();
+    closeNotebooksDropdown();
+    closeSearch();
+    closeUserDropdown();
+  });
+  $('body.user-signed-in #gearDropdown').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#gearDropdown').click();
+    }
+  });
+  $('body.user-signed-in #gearDropdown').click(function() {
+    $(this).toggleClass('open');
+    $('#gearDropdownMenu').toggleClass('expand');
+    if($(this).hasClass('open')){
+      $('#gearDropdownMenu').css("display","block");
+      $('#gearDropdownAriaLabel').text('Collapse User Menu')
+    }
+    else {
+      $('#gearDropdownMenu').css("display","none");
+      $('#gearDropdownAriaLabel').text('Expand User Menu')
+    }
+    toggleAriaExpanded(this);
+    closeLearnDropdown();
+    closeMoreMenu();
+    closeNotebooksDropdown();
+    closeSearch();
+    return false;
+  });
+  $('#learnMore').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#learnMore').click();
+    }
+  });
+  $('#learnMore').click(function(event) {
+    event.preventDefault();
+    $(this).toggleClass('open');
+    $('#learnMoreDropdown').toggleClass('expand');
+    if($(this).hasClass('open')){
+      $('#learnMoreDropdown').css("display","block");
+      $('#learnMoreDropdownAriaLabel').text('Collapse Learn More Menu')
+    }
+    else {
+      $('#learnMoreDropdown').css("display","none");
+      $('#learnMoreDropdownAriaLabel').text('Expand Learn More Menu')
+    }
+    toggleAriaExpanded(this);
+    closeMoreMenu();
+    closeNotebooksDropdown();
+    closeUserDropdown();
+    closeSearch();
+  });
+  function closeLearnDropdown() {
+    $('#learnMore').removeClass('open');
+    $('#learnMoreDropdown').removeClass('expand');
+    $('#learnMoreDropDownAriaLabel').text('Expand Learn More Menu')
+    $('#learnMoreDropdown').css("display","none");
+    $('#learnMore').attr("aria-expanded", "false");
+  }
+  function closeUserDropdown() {
+    $('#gearDropdown').removeClass('open');
+    $('#gearDropdownMenu').removeClass('expand');
+    $('#gearDropDownAriaLabel').text('Expand User Menu')
+    $('#gearDropdownMenu').css("display","none");
+    $('#gearDropdown').attr("aria-expanded", "false");
+  }
+  function closeMoreMenu() {
+    $('#mobileNavDropdown').removeClass('open');
+    $('#mobileNavContainer').removeClass('expand');
+    $('#mobileNavDropdownAriaLabel').text("Expand More Menu");
+    $('#mobileNavDropdown').css("display","none");
+    $('#mobileNavContainer').attr("aria-expanded", "false");
+  }
+  function closeNotebooksDropdown() {
+    $('#notebookFilterDropDownFullThing').removeClass('open');
+    $('#dropdownCaretButton').removeClass('open');
+    $('#dropdownCaretButtonAriaLabel').text('Expand Notebooks Menu')
+    $('#dropdownMenu').css("display","none");
+    $('#dropdownCaretButton').attr("aria-expanded", "false");
+  }
+  function toggleAriaExpanded(element) {
+    var aria = $(element).attr("aria-expanded");
+    if (aria == "true")
+      $(element).attr("aria-expanded", "false");
+    else
+      $(element).attr("aria-expanded", "true");
+  }
+  $('#dropdownCaretButton').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#dropdownCaretButton').click();
+    }
+  });
+  $('#dropdownCaretButton').click(function() {
+    $(this).toggleClass('open');
+    if($(this).hasClass('open')){
+      $('#dropdownMenu').css("display","block");
+      $('#dropdownCaretButtonAriaLabel').text('Collapse Notebooks Menu')
+    }
+    else {
+      $('#dropdownMenu').css("display","none");
+      $('#dropdownCaretButtonAriaLabel').text('Expand Notebooks Menu')
+    }
+    toggleAriaExpanded(this);
+    closeLearnDropdown();
+    closeMoreMenu();
+    closeSearch();
+    closeUserDropdown();
+  });
+
+  // Header Notebook Caret Downdown Functionality
+  var dropdown_loaded = false;
+  $('#dropdownCaretButton').on('click',function(){
+    if(!dropdown_loaded){
+      $('#dropdownMenu').html('<center> <%=image_tag('loading.gif', style: 'height: 20px') %> </center>');
+      $('#dropdownMenu').load('/layout_dropdown', function(response,status){
+        if (status != "error") {
+          $(document).trigger('dropdownMenuLoaded');
+          dropdown_loaded=true;
+        };
+      });
+    }
+    else {
+      $(document).trigger('dropdownMenuLoaded');
+    }
+  });
+
+  /* ======================================= */
+  /* ===== Search Button Functionality ===== */
+  /* ======================================= */
+  $('#expandableSearch').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#expandableSearch').click();
+    }
+  });
+  $('#expandableSearch').click(function() {
+    $(this).toggleClass('focus-back');
+    $('#expandableSearchDropdown').toggleClass('focus-back');
+    if($(this).hasClass('focus-back')){
+      $('#expandableSearchDropdown').css("display","block");
+      $('#expandableSearchDropdown .searchFieldBox').focus();
+      $('#dropdownSearchAriaLabel').text('Collapse Search Container')
+
+    }
+    else {
+      $('#expandableSearchDropdown').css("display","none");
+      $('#dropdownSearchAriaLabel').text('Expand Search Container')
+    }
+    toggleAriaExpanded(this);
+    closeLearnDropdown();
+    closeMoreMenu();
+    closeNotebooksDropdown();
+    closeUserDropdown();
+  });
+  function closeSearch() {
+    $('#expandableSearch').removeClass('focus-back');
+    $('#expandableSearchDropdown').removeClass('focus-back');
+    $('#expandableSearchDropdown').css("display","none");
+    $('#expandableSearch').attr("aria-expanded", "false");
+  }
+
+  /* ======================================= */
+  /* ==== Switching Layout to BETA/back ==== */
+  /* ======================================= */
+  $('a.beta').on("click", function(e) {
+    e.preventDefault();
+    window.location = '/?beta=true';
+  });
+  $('a.switchGUI').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('a.switchGUI').click();
+    }
+  });
+  $('a.switchGUI').on("click", function(e) {
+    e.preventDefault();
+    window.location = '/';
+  });
+
+  /* ======================================= */
+  /* ======= Home Page Functionality ======= */
+  /* ======================================= */
+  $(document).ready(function(){
+    var selector = '.page-home .tabs a'
+    $(selector).on('click', function(){
+      $(selector).closest("li.tab").removeClass('active');
+      $(selector).attr("aria-expanded", "false");
+      $(this).closest("li.tab").addClass('active');
+      $(this).attr("aria-expanded", "true");
+    });
+  });
+
+  $('#newHomePageNotebooks').load('/home_notebooks');
+
+  // Loading opacity & spinner when tab is clicked or Enter key is pressed (for accessibility)
+  $('.page-home .tabLink').on("click", function(e){
+    e.preventDefault();
+    $(document).ajaxStart(function(){
+      if ($('#initialLoadImage').length < 1) {
+        $("wait").css("display", "block");
+        $('#hiddenSpinner').addClass("loading");
+        $('#hiddenSpinner').attr("aria-live","assertive");
+      }
+    });
+    $(document).ajaxComplete(function(){
+      $("#wait").css("display", "none");
+      $("#txt").css("opacity", "1");
+      $("#newHomePageNotebooks").css("opacity","1");
+      $("#hiddenSpinner").removeClass("loading");
+      $('#hiddenSpinner').attr("aria-live","off");
+      $(document).unbind('ajaxStart');
+      $(document).unbind('ajaxComplete');
+    });
+  });
+
+  function loadingGif() {
+    $(document).ajaxStart(function(){
+      $('#hiddenSpinner').addClass("loading");
+      $('#hiddenSpinner').attr("aria-live","assertive");
+    });
+    $(document).ajaxComplete(function(){
+      $("#hiddenSpinner").removeClass("loading");
+      $('#hiddenSpinner').attr("aria-live","off");
+      $(document).unbind('ajaxStart');
+      $(document).unbind('ajaxComplete');
+    });
+  }
+
+  //Data for RECENT notebooks
+  $('#newHomeNotebooksRecent').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#newHomeNotebooksRecent').click();
+    }
+  });
+  $("#newHomeNotebooksRecent").on("click", function(){
+    fadeHomePageListings();
+    $("#newHomePageNotebooks").load('/home_notebooks?type=recent');
+    return false;
+  });
+
+  //Data for STARRED notebooks
+  $('#newHomeNotebooksStars').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#newHomeNotebooksStars').click();
+    }
+  });
+  $("#newHomeNotebooksStars").on("click", function(){
+    fadeHomePageListings();
+    $("#newHomePageNotebooks").load('/home_notebooks?type=stars');
+    return false;
+  });
+
+  //Data for RECOMMENDED notebooks
+  $('#newHomeNotebooksRecommended').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#newHomeNotebooksRecommended').click();
+    }
+  });
+  $("#newHomeNotebooksRecommended").on("click", function(){
+    fadeHomePageListings();
+    $("#newHomePageNotebooks").load('/home_notebooks?type=suggested');
+    return false;
+  });
+
+   //Data for YOUR notebooks
+  $('#newHomeNotebooksYours').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#newHomeNotebooksYours').click();
+    }
+  });
+  $("#newHomeNotebooksYours").on("click", function(){
+    fadeHomePageListings();
+    $("#newHomePageNotebooks").load('/home_notebooks?type=mine');
+    return false;
+  });
+
+  //Data for ALL notebooks
+  $('#newHomeNotebooksAll').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#newHomeNotebooksAll').click();
+    }
+  });
+  $("#newHomeNotebooksAll").on("click", function(){
+    fadeHomePageListings();
+    $("#newHomePageNotebooks").load('/home_notebooks?type=all');
+    return false;
+  });
+  function fadeHomePageListings() {
+    $("#txt").css("opacity", ".5");
+    $("#newHomePageNotebooks").css("opacity", ".5");
+  }
+
+  /* ===================================== */
+  /* ===== Search Page Functionality ===== */
+  /* ===================================== */
+  $('body.page-notebook-search form#bigSearchBar').on('submit',function(){
+    $('.search-filters-container .token-label').prepend(' ');
+    var search_filters = $('.search-filters-container .token-label');
+    var search_input = $('#bigSearchBar input.searchFieldBox');
+    var search_query = search_input.val() + search_filters.text();
+    $('#advancedSearch').val(search_query);
+    if (search_input.val() != search_input.data('oldvalue')){
+      $('input[name="page"]').val(1);
+    }
+  });
+  $('#filterFormType').change(function() {
+    $('#emptyfilterInclusionContainer').css("display","none");
+    $('#emptyfilterFormValue').css("display","none");
+    if ($('#filterFormType option:selected').val() == "updated" || $('#filterFormType option:selected').val() == "created"){
+      $('#filterFormInclusionContainer').css("display","none");
+      $('#dateFilterFormInclusionContainer').css("display","block");
+      $('#filterFormValue').css("display","none");
+      $('#dateFilterFormValue').css("display","block");
+      $('#addFilterForm').addClass('date-filter');
+    }
+    else {
+      $('#filterFormInclusionContainer').css("display","block");
+      $('#dateFilterFormInclusionContainer').css("display","none");
+      $('#filterFormValue').css("display","block");
+      $('#dateFilterFormValue').css("display","none");
+      $('#addFilterForm').removeClass('date-filter');
+    }
+  });
+  function removeFilterFunctionality() {
+    $('body.page-notebook-search .search-filters-super-container .close').keypress(function(e){
+      var keycode = (e.keyCode ? event.keyCode : event.which);
+      if(keycode == '13' || keycode == '32'){
+        e.preventDefault();
+        $('body.page-notebook-search .close').click();
+      }
+    });
+    $('body.page-notebook-search .search-filters-super-container .close').on('click', function(e){
+      e.preventDefault();
+      $(this).parent().remove();
+      $('.search-alerts-container').empty();
+      $('.search-alerts-container').append('<div class="content-container alert-container"><div class="alert alert-success content-body-alert" role="alert"><i class="fa fa-check-circle" aria-hidden="true"></i>Filter deleted successfully. Preform search to refresh the results.<button class="close" aria-hidden="false" aria-label="Close" data-dismiss="alert" type="button"> &times;</button></div></div>');
+      $('.searchFieldBox').focus();
+    });
+  }
+  removeFilterFunctionality();
+  $('#filterToggle').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#filterToggle').click();
+    }
+  });
+  $('#filterToggle').on('click', function(e){
+    e.preventDefault();
+    toggleAriaExpanded(this);
+    $('#filterToggle').children('i.fa-chevron-down').toggleClass('spin');
+    element = '#addFilterFormContainer';
+    $(element).toggleClass('expand');
+    if($(element).hasClass('expand')){
+      $(element).css('display','block');
+    }
+    else {
+      $(element).css('display','none');
+    }
+    element = '#addDateFilterFormContainer';
+    $(element).toggleClass('expand');
+    if($(element).hasClass('expand')){
+      $(element).css('display','block');
+    }
+    else {
+      $(element).css('display','none');
+    }
+    toggleAriaExpanded(element);
+  });
+  $('#filterFormSubmit').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#filterFormSubmit').click();
+    }
+  });
+  $('#filterFormSubmit').on('click', function(e){
+    e.preventDefault();
+    if ($('#addFilterForm').hasClass('date-filter')) {
+      filter = $('#dateFilterFormValue');
+      filterInclusion = $('#dateFilterFormInclusion');
+    }
+    else {
+      filter = $('#filterFormValue');
+      filterInclusion = $('#filterFormInclusion');
+    }
+    if ($(filter).val().length > 0) {
+      if ($(filter).val().indexOf(' ') >= 0 && ($(filter).val().indexOf('"') < 0)) {
+        new_filter = $('#filterFormType').val() + ':' + $(filterInclusion).val() + "\"" + $(filter).val() + "\"";
+      }
+      else {
+        new_filter = $('#filterFormType').val() + ':' + $(filterInclusion).val() + $(filter).val();
+      }
+      $('.search-filters-container').css('display','table-row');
+      $('.search-filters-container .tokenfield').append('<div class="token"><span class="token-label">' + new_filter + '</span><span class="sr-only">' + " " + '</span><a class="close tooltips" href="#" tab-index="-1" title="Delete search filter"><span aria-hidden="true">&times;</span><span class="sr-only">Delete search filter of ' + new_filter + '</span></a></div>');
+      $('.search-alerts-container').empty();
+      $('.search-alerts-container').append('<div class="content-container alert-container"><div class="alert alert-success content-body-alert" role="alert"><i class="fa fa-check-circle" aria-hidden="true"></i>Filter added successfully. Add more filters or preform search to refresh the results.<button class="close" aria-hidden="false" aria-label="Close" data-dismiss="alert" type="button"> &times;</button></div></div>');
+      $('#filterFormValue').val("");
+      $('#dateFilterFormValue').val("");
+      removeFilterFunctionality();
+    }
+    else {
+      $('.search-alerts-container').empty();
+      $('.search-alerts-container').append('<div class="content-container alert-container"><div class="alert alert-error content-body-alert" role="alert"><i class="fa fa-times-circle" aria-hidden="true"></i>Filter could not be added because Value field is empty.<button class="close" aria-hidden="false" aria-label="Close" data-dismiss="alert" type="button"> &times;</button></div></div>');
+    }
+  });
+  $('#addFilterForm').on('submit', function(e) {
+    e.preventDefault();
+    if ($('#addFilterForm').hasClass('data-filter')) {
+      filter = $('#dateFilterFormValue');
+    }
+    else {
+      filter = $('#filterFormValue');
+    }
+    if ($(filter).val().length > 0) {
+      $('#filterFormSubmit').click();
+    }
+    $('#bigSearchBar').submit();
+  });
+  $('#addDateFilterForm').on('submit', function(e) {
+    e.preventDefault();
+    if ($('#dateFilterFormValue').val().length > 0) {
+      $('#dateFilterFormSubmit').click();
+    }
+    $('#bigSearchBar').submit();
+  });
+
+  $('.sortResultsForm .sortDropDown').change(function(){
+    $('.sortResultsForm').submit();
+  }).val($('.sortHidden').val());
+
+  // Enabled toggling the show field by either clicking checkbox or its label
+  $('#showDeprecatedToken, .tokenfield #deprecatedCheckbox').click(function(){
+    $('#filterDeprecatedForm #deprecatedCheckbox').click();
+  });
+
+  $('#showPrivateToken, .tokenfield #showPrivateNotebooksCheckbox').click(function(){
+    $('#filterPrivateNotebooksForm #showPrivateNotebooksCheckbox').click();
+  });
+
+  // Filter search results by those that are/aren't deprecated
+  $('#filterDeprecatedForm #deprecatedCheckbox').change(function(){
+    $('#filterDeprecatedForm').submit();
+  });
+
+  // Filter search results by those that are/aren't private notebooks
+  $('#filterPrivateNotebooksForm #showPrivateNotebooksCheckbox').change(function(){
+    var params = $('#filterPrivateNotebooksForm').serialize();
+    var url = window.location.href.split("?")[0]
+    window.location = url + "?" + params;
+  });
+
+  /* ===================================== */
+  /* ========== Search Tooltip =========== */
+  /* ===================================== */
+  var reveal_search_info_message = true;
+  $('form.search-form .searchFieldBox').on('focus', function(){
+    $('form.search-form .searchFieldBox').css('padding-right','1.4em');
+    $('#searchTooltipButton').css('display','block');
+    $('body').on('click', function(e){
+      if (!(e.target.class == "super-container" || $(e.target).parents(".super-container").length || e.target.id == "navbarSearchBar" || $(e.target).parents("#navbarSearchBar").length)) {
+        $('#searchTooltipButton').css('display','none');
+        $('form.search-form .searchFieldBox').css('padding-right','.5em');
+        closeSearchDialog();
+      }
+    });
+  });
+  $('#searchTooltipButton').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#searchTooltipButton').click();
+    }
+  });
+  $('#searchTooltipButton').on('click', function(e){
+    e.preventDefault();
+    if($('body').hasClass('page-home')) {
+      var element = 'form.search-form .form-group'
+      var carot_direction = 'top';
+    }
+    else {
+      var element = 'form.search-form'
+      var carot_direction = 'left';
+    }
+    if(reveal_search_info_message) {
+      $(element).prepend('<div class="search-tooltip popover ' + carot_direction + ' fade in" role="alert"><div class="arrow"></div><h1 class="popover-title center">Adding Search Filter</h1><div class="popover-content"><p>Filter your search results by adding filters such as:</p><ul><li>user:username</li><li>title:mapping</li><li>description:"interactive maps"</li></ul></div></div>');
+      $('form.search-form .searchFieldBox').focus();
+      reveal_search_info_message = false;
+    }
+    else {
+      closeSearchDialog();
+      $('form.search-form .searchFieldBox').focus();
+    }
+  });
+  function closeSearchDialog() {
+    $('.search-tooltip').remove();
+    reveal_search_info_message = true;
+  }
+
+  /* ===================================== */
+  /* ======== Group Functionality ======== */
+  /* ===================================== */
+  $('#groupToggle').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#groupToggle').click();
+    }
+  });
+  var viewToggled = false;
+  $("#groupToggle").on("click", function(){
+    if(!viewToggled) {
+      $('.sparkline').sparkline();
+      viewToggled = true;
+    }
+  });
+
+  /* ===================================== */
+  /* ===== Notebook Actions Dropdown ===== */
+  /* ===================================== */
+  //More Actions Dropdown for Notebook
+  $('#notebookGearDropdown').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#notebookGearDropdown').click();
+    }
+  });
+  $('#notebookGearDropdown').click(function() {
+    $(this).toggleClass('expand');
+    if($(this).hasClass('expand')){
+      $('#notebookGearActions').css("display","block");
+      $('#notebookGearDropdownAriaLabel').text('Collapse More Options Menu');
+    }
+    else {
+      $('#notebookGearActions').css("display","none");
+      $('#notebookGearDropdownAriaLabel').text('Expand More Options Menu')
+    }
+    toggleAriaExpanded(this);
+    return false;
+  });
+
+  /* ===================================== */
+  /* ====== Recommendation Toggling ====== */
+  /* ===================================== */
+  // Notebook "recommendations" similar notebooks and user also viewed stuff
+  var prepareShelf = function(selector){
+    $(selector).slick({
+      dots: true,
+      slidesToScroll: 2,
+      variableWidth: true,
+      infinite: false
+    })
+    $('.tooltip-narrow, .tooltips:not([data-backuptitle]), .tooltip-title').tooltipster({
+      'maxWidth':250
+    });
+    $('.headerShelf p:not(:has(.js-shave))').shave(60);
+  }
+  prepareShelf('.recommendedShelf');
+
+  $('#recommendationToggle').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#recommendationToggle').click();
+    }
+  });
+  $('#recommendationToggle').on('click', function(e){
+    e.preventDefault();
+    $(this).toggleClass('is-active');
+    $('.jumbotron.notebookAddInfo').toggleClass('is-active');
+    toggleAriaExpanded(this);
+    if ($('#recommendationToggle').hasClass('is-active')) {
+      $('.jumbotron.notebookAddInfo .shelf').css("display", "block");
+      $('#dropdownRecommendationsAriaLabel').text('Collapse Recommendations Dropdown');
+    }
+    else {
+      $('#dropdownRecommendationsAriaLabel').text('Expand Recommendations Dropdown');
+      $('.jumbotron.notebookAddInfo .shelf').delay(1000).queue(function(){
+        $(this).css("display", "none")
+      });
+    }
+    $(this).children('i').toggleClass('spin');
+  });
+
+  /* ===================================== */
+  /* ===== Revisions - Edit Summary ====== */
+  /* ===================================== */
+  $('.commit-message-cell .edit-icon').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $(this).click();
+    }
+  });
+  $('.commit-message-cell .edit-icon').on('click', function(e){
+    e.preventDefault();
+    var parentElement = $(this).parent().parent();
+    parentElement.toggleClass('is-active');
+    parentElement.find('.mouseoveredit').css("display", "none");
+    parentElement.find('.commit-message-edit-form').css("display", "block");
+    var text = parentElement.find('.mouseoveredit > span.just-revision-message').text()
+    if (text != "-") {
+      parentElement.find('.commit-message-edit-form textarea').val(text);
+    }
+    document.addEventListener('keydown', autoSize);
+    var textarea = $('textarea', parentElement);
+    value = textarea[0].scrollHeight + 2;
+    textarea.css("height", value + "px");
+  });
+  $('.commit-message-cell .btn-danger').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $(this).click();
+    }
+  });
+  $('.commit-message-cell .btn-danger').on('click', function(e){
+    e.preventDefault();
+    var parentElement = $(this).parent().parent()
+    parentElement.toggleClass('is-active');
+    parentElement.find('.mouseoveredit').css("display", "block");
+    parentElement.find('.commit-message-edit-form').css("display", "none");
+  });
+  $('form.commit-message-edit-form').on('submit', function(e){
+    e.preventDefault();
+    var url = ($(this).data("url")).split("/");
+    url[2] = url[2].substring(0, url[2].indexOf('-'));
+    url = url.join('/') + "/edit_summary";
+    data = $(this).serialize();
+    console.log(data);
+    $.ajax({
+      method: 'PATCH',
+      url: url,
+      data: data,
+      headers: {
+        Accept: 'application/json'
+      },
+      success: function(response){
+      },
+      error: function(response){
+        bootbox.alert('Error loading tags: ' + response.responseText);
+      }
+    });
+  });
+
+  /* ===================================== */
+  /* ========= Character Limits ========== */
+  /* ===================================== */
+  $('#deprecateNotebookReasoning').keyup(function(){
+    var length = this.value.length;
+    var characterCountElement = $('#deprecateNotebookForm .remaining-characters-warning');
+    remainingCharacterWarning(length, characterCountElement, 500);
+  })
+  $('.commit-message-edit-form textarea').keyup(function(){
+    var length = this.value.length;
+    var characterCountElement = $(this).parent().find('.remaining-characters-warning');
+    remainingCharacterWarning(length, characterCountElement, 250);
+  })
+  $('#stageSummary').keyup(function(){
+    var length = this.value.length;
+    var characterCountElement = $('#stageCommitMessage .remaining-characters-warning');
+    remainingCharacterWarning(length, characterCountElement, 250);
+  })
+  function remainingCharacterWarning(length, characterCountElement, maxlength) {
+    $(characterCountElement).html( 'Remaining characters: ' + ( maxlength - length ));
+    if (maxlength <= length) {
+      $(characterCountElement).addClass('error');
+    }
+    else {
+      $(characterCountElement).removeClass('error');
+    }
+    if (maxlength - length < 50) {
+      $(characterCountElement).css('display','block');
+    }
+    else {
+      $(characterCountElement).css('display','none');
+    }
+  }
+
+  /* ===================================== */
+  /* =========== Environments ============ */
+  /* ===================================== */
+  /* Add Environments */
+  $('#addEnvironment').on('click', function(){
+    $('#environmentLoading').modal('show');
+    $('#environmentLoading div div.modal-content').load('/environments/new');
+    return false;
+  });
+
+  /* Edit Environments */
+  $('.editEnvironment').on('click', function(){
+    $('#environmentLoading').modal('show');
+    var url = '/environments/' + encodeURIComponent($(this).attr('data-environmentName')) + '/edit'
+    $('#environmentLoading div div.modal-content').load(url);
+    return false;
+  });
+
+  /* Delete Environments */
+  $('.delEnvironment').on('click', function(){
+    var name = encodeURIComponent($(this).attr('data-environmentName'))
+    $('#confirmationModal').modal('show');
+    var text = 'Delete the reference to environment: "' + name + '".';
+    $('#confirmation1').text(text);
+    $('#hiddenConfirmationMetadata').val(name);
+    return false;
+  });
+  $('body.page-environments #confirmationModalForm').on('submit', function(){
+    var url = '/environments/' + $('#hiddenConfirmationMetadata').val();
+    $.ajax({
+      url: url,
+      type: 'DELETE',
+      success: function(){
+        location.reload();
+      },
+      error: function(response){
+        bootbox.alert('You had an error! ' + response.statusText);
+      }
+    });
+    return false;
+  });
+
+  /* ===================================== */
+  /* ========= User Preferences ========== */
+  /* ===================================== */
+  $('#userPreferencesForm').on('submit', function(){
+    var data = $(this).serialize();
+    var url = $(this).attr('action');
+    $.ajax({
+      url: url,
+      data: data,
+      type: 'POST',
+      success: function(){
+        location.reload();
+      },
+      error: function(response){
+        bootbox.alert('You had an error! ' + response.statusText);
+      }
+    });
+    return false;
+  });
+
+  /* ===================================== */
+  /* ======= Site Warning Banner ========= */
+  /* ===================================== */
+  /* Create Warning Banner */
+  $('#warningSubmit').click(function(){
+    var url = '/admin/warning';
+    var data = $('#warningForm').serialize();
+    $.ajax({
+      url: url,
+      data: data,
+      type: 'POST',
+      success: function(){
+        window.location.replace('/admin/warning');
+      },
+      failure: function(response){
+        bootbox.alert(response.statusText);
+        console.log(response);
+      }
+    });
+    return false;
+  });
+
+  /* Delete Warning Banner */
+  $('#warningDelete').on('click', function(){
+    $('#confirmationModal').modal('show');
+    $('#confirmation1').text('Delete the site warning.');
+    return false;
+  });
+  $('body.page-admin-warning #confirmationModalForm').on('submit', function(){
+    var url = '/admin/warning';
+    var data = $('#warningForm').serialize();
+    $.ajax({
+      url: url,
+      data: data,
+      type: 'DELETE',
+      success: function(){
+        window.location.replace('/admin/warning');
+      },
+      failure: function(response){
+        bootbox.alert(response.statusText);
+        console.log(response);
+      }
+    });
+    return false;
+  });
+
+
+  /* ===================================== */
+  /* ======== Admin Bulk Import ========== */
+  /* ===================================== */
+  /* Bulk Upload Tags */
+  $(document).ready(function() {
+    if ($('#importNotebooksForm').length > 0 ){
+      $.ajax({
+        method: 'GET',
+        url: '/tags',
+        headers: {
+          Accept: 'application/json'
+        },
+        success: function(json){
+          $('#importTags').tokenfield({
+            minLength:0,
+            delimiter: [',',' ','_','$',';','.','@','#','%','^','&','(',')','*','!'],
+            showAutocompleteOnFocus: true,
+            autocomplete:{
+              source: json,
+              delay: 100,
+              minLength: 2
+            }
+          });
+        },
+        error: function(response){
+          bootbox.alert('Error loading tags: ' + response.responseText);
+        }
+      });
+    }
+  });
+
+  /* ===================================== */
+  /* ========== Admin Reindex ============ */
+  /* ===================================== */
+  /* Reindex Controller */
+  $('#runReindex').on('click', function(e) {
+    $('#runReindex').addClass('hidden');
+    $('#reindexResults').removeClass('hidden');
+    $('#hiddenSpinner').addClass("loading");
+    $('#hiddenSpinner').attr("aria-live","assertive");
+    admin_group_reindex();
+    admin_notebook_reindex(0,100)
+
+  });
+  /* Group Reindex */
+  function admin_group_reindex(){
+    $.ajax({
+      method: 'PATCH',
+      url: '/admin/group_reindex',
+      headers: {
+        Accept: 'application/json'
+      },
+      success: function(json){
+        $('#groupReindexCount').text(json['count'])
+        $('#groupReindexSuccess').removeClass('hidden');
+      },
+      error: function(response){
+        bootbox.alert('Server Error Reindexing Groups: ' + response.responseText);
+      }
+    });
+  }
+
+  /* Notebook Reindex */
+  function admin_notebook_reindex(page, limit){
+    $.ajax({
+      method: 'PATCH',
+      url: '/admin/notebook_reindex',
+      data: {
+        page: page,
+        limit: limit
+      },
+      headers: {
+        Accept: 'application/json'
+      },
+      success: function(json){
+        if (json['count'] > 0){
+          currentCount = $('#notebookReindexCount').text() * 1 + json['count']
+          $('#notebookReindexCount').text(currentCount);
+          $('#notebookReindexSuccess').removeClass('hidden');
+        }
+        if (json['errors'] > 0){
+          for(i=0; i< json['notebook_errors'].length; i++){
+            error_link = $('<a></a>').attr('href', json['notebook_errors'][i]['url']).text(json['notebook_errors'][i]['title']);
+            error_text = $('<span></span>').text(' - ' + json['notebook_errors'][i]['text']);
+            $('#notebookReindexErrorList').append($("<li></li>").append(error_link).append(error_text));
+          }
+          $('#notebookReindexError').removeClass('hidden');
+        }
+        if(json['finished'] == false){
+          console.log("Doing next page of notebooks for reindex " + page);
+          $('#hiddenSpinner img').attr("alt","Reindexing next page: " + (page + 1) + " of notebooks");
+          admin_notebook_reindex(page + 1, limit);
+        }
+        else {
+          $("#hiddenSpinner").removeClass("loading");
+          $('#hiddenSpinner').attr("aria-live","off");
+          $('#reindexResults').append('<div class="sr-only" role="alert">Reindex has finished running.</div>');
+        }
+      },
+      error: function(response){
+        bootbox.alert('Server Error Reindexing Notebooks: ' + response.responseText);
+      }
+    });
+  }
+
+  /* ===================================== */
+  /* ============== Users ================ */
+  /* ===================================== */
+  /* Delete User */
+  $('body.page-users .delete-icon').on('click', function(e){
+    e.preventDefault();
+    $('#confirmationModal').modal('show');
+    var id = $(this).attr('data-user-id');
+    var name = $(this).attr('data-user-name');
+    $('#confirmation1').text('Delete the user: "' + name + '".');
+    $('#inAdditionText').removeClass('hide');
+    $('#confirmation2').text('All notebooks currently owned by the user will be deleted.').parent().removeClass('hide');
+    $('#confirmation3').text('If any notebooks are deleted, all change requests, metrics, revisions, reviews, and previous/pending change requests for those will also be deleted.').parent().removeClass('hide').css("margin-left","2em");
+    $('#confirmation4').text('All old notebook revisions user does not own but has updated or created will say version was made by "Unknown".').parent().removeClass('hide');
+    $('#confirmation5').text('For any groups where this user is the sole owner, no one will be able to modify the group membership.').parent().removeClass('hide');
+    $('#confirmation6').text('All of the user\'s comments will be deleted.').parent().removeClass('hide');
+    $('#confirmation7').text('All notebooks deprecated by this user will say it was deprecated by "Unknown".').parent().removeClass('hide');
+    $('#confirmation8').text('All of the user\'s notebook usage in notebook metrics will be deleted.').parent().removeClass('hide');
+    $('#confirmation9').text('All of the user\'s pending change requests will be deleted.').parent().removeClass('hide');
+    $('#hiddenConfirmationMetadata').val(id);
+    $('#hiddenConfirmationMetadataAlt').val(name);
+    return false;
+  });
+  $('body.page-users #confirmationModalForm').on('submit', function(){
+    var url = '/users/' + $('#hiddenConfirmationMetadata').val();
+    bootboxPending('Deleting User');
+    $('#confirmationModal').modal('hide');
+    $.ajax({
+      url: url,
+      type: 'DELETE',
+      success: function(){
+        bootbox.hideAll();
+        window.location.replace('/users');
+      },
+      failure: function(response){
+        bootbox.hideAll();
+        bootbox.alert(response.statusText);
+      }
+    });
+    return false;
+  });
+
+  /* ===== Toggle Email Column on Users Table ===== */
+  $('#toggleEmailColumn').change(function() {
+    if($('#toggleEmailColumn').prop('checked')) {
+      window.location.href = window.location.href.split('?')[0] + '?id=email';
+    }
+    else {
+      window.location.href = window.location.href.split('?')[0];
+    }
+  });
+
+  /* ===================================== */
+  /* ========= Changes Requests ========== */
+  /* ===================================== */
+  $('#changeReqViewButton').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '13' || keycode == '32'){
+      e.preventDefault();
+      $('#changeReqViewButton').click();
+    }
+  });
+  $('#changeReqViewButton').click(function() {
+    $(this).toggleClass('expand');
+    if($(this).hasClass('expand')){
+      $('#changeReqViewDropdown').css("display","block");
+      $('#dropdownChangeViewAriaLabel').text(' Collapse Change View Dropdown. Currently set to:');
+    }
+    else {
+      $('#changeReqViewDropdown').css("display","none");
+      $('#dropdownChangeViewAriaLabel').text(' Expand Change View Dropdown. Currently set to:');
+    }
+    toggleAriaExpanded(this);
+  });
+  $('.page-change_requests-id #changeReqViewText').on("click", function(){
+    loadingGif();
+  });
+
+  /* ===================================== */
+  /* ======== Modal Accessibility ======== */
+  /* ===================================== */
+  /* Have Modals gain focus whenever opened - in the event of default behavior failing */
+  $('.modal-activate').on("click", function (event) {
+    href = $(this).attr('href');
+    var dialog = $(href);
+    $(href).css("display","block");
+    $(href).focus();
+  });
+
+  /* ===================================== */
+  /* ======== Staging/Uploading ========== */
+  /* ===================================== */
+  $(document).off('stage_success');
+  $(document).on("stage_success", function(e, preprocessResponse) {
+    var tags = preprocessResponse['proposed_tags'];
+    console.log(tags);
+    if(preprocessResponse['proposed_tags'] !='') {
+      $("#stageTags").val($("#stageTags").val() + ',' + tags.join(", "));
+    }
+    $.ajax({
+      method: 'GET',
+      url: '/tags',
+      headers: {
+        Accept: 'application/json'
+      },
+      success: function(json){
+        $('#stageTags').tokenfield({
+          minLength:0,
+          delimiter: [',',' ','_','$',';','.','@','#','%','^','&','(',')','*','!'],
+          showAutocompleteOnFocus: true,
+          autocomplete:{
+            source: json,
+            delay: 100,
+            minLength: 2
+          }
+        });
+      },
+      error: function(response){
+        bootbox.alert('Error loading tags: ' + response.responseText);
+      }
+    });
+  });
+
+  $('#stageUpload').on('show.bs.modal',function(){
+    $.ajax({
+      method: 'GET',
+      url: '/stages/' + $('#stagedName').val() + '/preprocess',
+      headers: {
+        Accept: 'application/json'
+      },
+      success:function(response){
+        $(document).trigger("stage_success", response);
+      },
+      error: function(response){
+        bootbox.alert('Error: ' + response.responseText);
+      }
+    });
+  });
+
+  $(document).on('upload_error',function(event, response){
+    $('#uploadFeedbackProgressBar').html('');
+    if(response.status==409){
+        $('#uploadOverwrite').attr('hidden',false);
+    }
+    else{
+      $('#uploadErrorWarning').html('<strong> Error: </strong>' + response.responseText);
+      $('#uploadErrorWarning').attr('hidden',false);
+      $('#uploadFileSubmit').attr('disabled', false);
+    }
+  });
+
+  var pathname = window.location.pathname
+  if(pathname.indexOf("stage") > -1){
+    var staging_id = pathname.substr(pathname.lastIndexOf('/')+1);
+  }
+  $('#uploadFileForm').validator().on('submit', function(e){
+    if (!e.isDefaultPrevented()) {
+      $('#uploadFileSubmit').attr('disabled', true);
+      $('#uploadFeedbackProgressBar').html('<div class="progress progress-striped active"><div class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="90" style="width: 100%">');
+      var url = '/stages'
+      $.ajax({
+        url: url,
+        type: 'POST',
+        data: new FormData($('#uploadFileForm')[0]),
+        cache: false,
+        contentType: false,
+        processData: false,
+        success: function(response) {
+          $('#uploadFeedbackProgressBar').html('');
+          var stagingResponse = response;
+          $('#stagedName').val(stagingResponse['staging_id']);
+          $('#stagingId').val(stagingResponse['staging_id']);
+          $('#stageUpload').modal('show');
+          $('#uploadFileModal').modal("hide");
+          $('#uploadFileSubmit').attr('disabled', false);
+        },
+        error: function(response) {
+          $(document).trigger("upload_error", response);
+        }
+      });
+    }
+  return false;
+  });
+
+  $(document).on('stage_error',function(event, response){
+    $('#stageFeedbackProgressBar').html('');
+    if(response.match(/duplicate title/)){
+        $('#stageOverwrite').attr('hidden',false);
+    }
+    else{
+      $('#stageOverwrite').attr('hidden',true);
+    }
+    $('#stageErrorWarning').html('<strong> Error with notebook </strong>');
+    $('#stageErrorWarning').attr('hidden',false);
+    $('#stageSubmit').attr('disabled', false);
+  });
+
+  $('#stageForm').validator().on('submit', function(e){
+    if (!e.isDefaultPrevented()) {
+      $('#stageSubmit').attr('disabled', true);
+      $('#stageFeedbackProgressBar').html('<div class="progress progress-striped active"><div class="progress-bar" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="90" style="width: 100%">');
+      var url = '/notebooks';
+      $.ajax({
+        url: url,
+        type: 'POST',
+        data: new FormData($('#stageForm')[0]),
+        cache: false,
+        contentType: false,
+        processData: false,
+        success: function(response) {
+          $('#stageFeedbackProgressBar').html('');
+          window.location.replace(response.friendly_url);
+        },
+        error: function(response) {
+          bootbox.alert(response.responseText);
+          $(document).trigger("stage_error", response.responseText);
+        }
+      });
+    return false;
+    }
+  });
+  $('#deleteStagedNotebook').on('click',function(){
+    bootbox.confirm("Are you sure you want to delete this staged notebook?", function(userResponse){
+      if (userResponse == true){
+        var url = $('#deleteStagedNotebook').prop('href');
+        bootboxPending('Deleting staged notebook!');
+        $.ajax({
+            url: url,
+            type: 'DELETE',
+            success: function(response){
+              bootbox.hideAll();
+              window.location=response.forward;
+            },
+            error: function(response){
+              bootbox.hideAll();
+              bootbox.alert('You had an error! ' + response.statusText);
+            }
+        });
+      }
+    })
+    return false;
+  });
+
+  // Catch people uploading a notebook from the Jupyter client
+  var target = document.location.hash.replace('#','');
+  if (target.length){
+    if(target=='STAGE'){
+      $('#stageUpload').modal('show');
+    };
+  };
+
+  /* ===================================== */
+  /* ==== Expand Textarea as you type ==== */
+  /* ===================================== */
+  function autoSize({target:element}){
+    // Only expands if they have the "auto-expand" class and the keydown autoSize event listener
+    if(!element.classList.contains('auto-expand'))
+      return;
+    setTimeout(function(){
+      value = element.scrollHeight + 2;
+      element.style.cssText = 'height:' + value + 'px';
+    },0);
+  }
+
+  /* ===================================== */
+  /* ======= Responsive Datatables ======= */
+  /* ===================================== */
+  /* ===== Initialize Tables ===== */
+  // First 3 Metric Tables (Views, Runs, and Stars)
+  $('.metric-datatable').DataTable({
+    'responsive': true,
+    'language': { 'search': 'Filter results:' },
+    'order': [[2,'desc']],
+    drawCallback: function(settings) {
+      reapplyTooltips($('.metric-datatable'))
+    },
+  });
+
+  $('#changeRequestsAllTable').DataTable({
+    'responsive': true,
+    'paging': false,
+    'language': { 'search': 'Filter results:' },
+    'columnDefs': [
+      { 'responsivePriority': 100, 'targets':[3] },
+      { 'responsivePriority': 10, 'targets':[2] },
+      { 'responsivePriority': 1, 'targets':[0,1,4] },
+    ],
+    drawCallback: function(settings) {
+      reapplyTooltips($('#changeRequestsAllTable'))
+    },
+  });
+
+  $('#changeRequestsOwnedTable').DataTable({
+    'responsive': true,
+    'paging': false,
+    'language': { 'search': 'Filter results:' },
+    'columnDefs': [
+      { 'responsivePriority': 100, 'targets':[3] },
+      { 'responsivePriority': 10, 'targets':[2] },
+      { 'responsivePriority': 1, 'targets':[0,1,4] },
+    ],
+    drawCallback: function(settings) {
+      reapplyTooltips($('#changeRequestsOwnedTable'))
+    },
+  });
+
+  $('#changeRequestsRequestedTable').DataTable({
+    'responsive': true,
+    'paging': false,
+    'language': { 'search': 'Filter results:' },
+    'columnDefs': [
+      { 'responsivePriority': 100, 'targets':[3] },
+      { 'responsivePriority': 10, 'targets':[1] },
+      { 'responsivePriority': 1, 'targets':[0,2,4] },
+    ],
+    drawCallback: function(settings) {
+      reapplyTooltips($('#changeRequestsRequestedTable'))
+    },
+  });
+
+  $('#editHistoryMetricTable').DataTable({
+    'responsive': true,
+    'language': { 'search': 'Filter results:' },
+    'order': [[3,'desc']],
+    drawCallback: function(settings) {
+      reapplyTooltips($('#editHistoryMetricTable'))
+    },
+  });
+
+  $('#environmentsTable').DataTable({
+    'responsive': true,
+    'paging': false,
+    'language': { 'search': 'Filter results:' },
+    'columnDefs': [
+      { 'responsivePriority': 1000, 'targets':[4] },
+      { 'responsivePriority': 100, 'targets':[3] },
+      { 'responsivePriority': 10, 'targets':[0,2] },
+      { 'responsivePriority': 1, 'targets':[1,5] },
+    ],
+    drawCallback: function(settings) {
+      reapplyTooltips($('#environmentsTable'))
+    },
+  });
+
+  $('#feedbackTable').DataTable({
+    'responsive': true,
+    'paging': false,
+    'language': { 'search': 'Filter results:' },
+    drawCallback: function(settings) {
+      reapplyTooltips($('#feedbackTable'))
+    },
+  });
+
+  $('#recommendedReviewerTable').DataTable({
+    'responsive': true,
+    'paging': false,
+    'searching': false,
+    'info': false,
+    'order': [[1,'desc']],
+    'language': { 'search': 'Filter results:' },
+  });
+
+  // The 5 uncondensed Review tables
+  $('.review-table').DataTable({
+    'responsive': true,
+    'paging': false,
+    drawCallback: function(settings) {
+      reapplyTooltips($('#reviewsForNotebooksTable'))
+    },
+  });
+
+  if ($('#allReviewsTable > thead .revisions-column').length){
+    var columnDefs = [
+      { 'responsivePriority': 100, 'targets':[5] },
+      { 'responsivePriority': 10, 'targets':[1,4] },
+      { 'responsivePriority': 1, 'targets':[0,2,3] },
+    ];
+  }
+  else {
+    var columnDefs = [
+      { 'responsivePriority': 100, 'targets':[4] },
+      { 'responsivePriority': 10, 'targets':[3] },
+      { 'responsivePriority': 1, 'targets':[0,1,2] },
+    ];
+  }
+  $('#allReviewsTable').DataTable({
+    'responsive': true,
+    'paging': false,
+    'columnDefs': columnDefs,
+    drawCallback: function(settings) {
+      reapplyTooltips($('#allReviewsTable'))
+    },
+  });
+
+  $('#revisionsTable').DataTable({
+    'responsive': true,
+    'paging': false,
+    'ordering': false,
+    'columnDefs': [
+      { 'responsivePriority': 100, 'targets':[1] },
+      { 'responsivePriority': 10, 'targets':[5] },
+      { 'responsivePriority': 1, 'targets':[0,2,3,4] },
+    ],
+    drawCallback: function(settings) {
+      reapplyTooltips($('#revisionsTable'))
+    },
+  });
+
+  $('#stagedNotebooksTable').DataTable({
+    'responsive': true,
+    'paging': false,
+    'language': { 'search': 'Filter results:' },
+    'columnDefs': [
+      { 'responsivePriority': 10, 'targets':[2] },
+      { 'responsivePriority': 1, 'targets':[0,1,3] },
+    ],
+  });
+
+  $('#subscriptionTable').DataTable({
+    'responsive': true,
+    'paging': false,
+    'language': { 'search': 'Filter results:' },
+    'columnDefs': [
+      { 'responsivePriority': 10, 'targets':[1,2] },
+      { 'responsivePriority': 1, 'targets':[0,3] },
+    ],
+  });
+
+  $('#userTable').DataTable({
+    'responsive': true,
+    'paging': false,
+    'ordering': false,
+    'searching': false,
+    'info': false,
+    'columnDefs': [
+      { 'responsivePriority': 1000, 'targets':[4,5] },
+      { 'responsivePriority': 100, 'targets':[3] },
+      { 'responsivePriority': 10, 'targets':[1,2] },
+      { 'responsivePriority': 1, 'targets':[0,6] },
+    ],
+  });
+
+  /* ===== Datatable Search ===== */
+  $('.dataTables_filter input').attr('placeholder','Search');
+
+  /* Hack to fix space key so it can appropriately toggle hidden table cells. */
+  $('.dataTable > tbody > tr > td:first-child').keypress(function(e){
+    var keycode = (e.keyCode ? event.keyCode : event.which);
+    if(keycode == '32'){
+      e.preventDefault();
+      $(this).click();
+    }
+  });
+
+  /* ===== Tooltips & Sparkline ===== */
+  $.fn.sparkline.defaults.line.lineColor = 'black';
+  $.fn.sparkline.defaults.line.fillColor  = 'gray';
+  $.fn.sparkline.defaults.line.highlightSpotColor ='black';
+  $.fn.sparkline.defaults.line.highlightLineColor ='black';
+  $('.sparkline').sparkline();
+  $('.minimize').shave(125);
+    $('.tooltip-right').tooltipster({
+      maxWidth:500,
+      side:'right'
+    });
+    $('.tooltips, .tooltip-title').tooltipster({
+      maxWidth:300
+    });
+    $.fn.tooltipster('setDefaults',{animation: 'grow'});
+    $('.tooltips').tooltipster();
+
+  // A fix for the broken tooltips occuring with Bootstrap 4 when interacted in parallel with dataTables
+  function reapplyTooltips(parent_element){
+    $(parent_element).find('[data-backuptitle]:not(.backup-applied)').each(function() {
+      $(this).prop('title', $(this).data('backuptitle'));
+      $(this).addClass('backup-applied');
+    });
+  }
+
+});
+
+$.fn.sparkline.defaults.line.lineColor = 'black';
+$.fn.sparkline.defaults.line.fillColor  = 'gray';
+$.fn.sparkline.defaults.line.highlightSpotColor ='black';
+$.fn.sparkline.defaults.line.highlightLineColor ='black';

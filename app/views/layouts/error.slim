@@ -1,0 +1,25 @@
+html
+  head
+    meta charset="UTF-8"
+    -if defined? nofollow
+      meta name="robots" content="nofollow"
+    -if defined? notebook.title
+      title =notebook.title
+    -elsif defined? subtitle and !subtitle.nil? and !subtitle.empty?
+      title #{GalleryConfig.site.name} - #{subtitle}
+    -else
+      title #{GalleryConfig.site.name}
+
+    ==favicon_link_tag "nb.ico"
+    ==stylesheet_link_tag "application", media: "all"
+
+div.center
+  div.well id="errorLayout"
+    a.logo-link href="#{root_path}"
+      -if browser.modern?
+        span.logo-nb.show-inline aria-hidden="true" style="display: none" NB
+        span.logo-gallery.show-inline aria-hidden="true" style="display: none" Gallery
+        span.sr-only N B Gallery Home
+      -else
+        ==image_tag("nbgallery_logo.png", id: "logo")
+    ==yield

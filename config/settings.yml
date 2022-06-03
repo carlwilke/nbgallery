@@ -1,0 +1,246 @@
+# Site branding
+site:
+  name: NBGallery
+  dns_name:
+  redirect_old_url:
+  redirect_new_url:
+
+# Mysql database configuration
+#
+# create user 'jupyter'@'localhost' identified by 'mypassword';
+# grant all on gallery.* to 'jupyter'@'localhost';
+#
+mysql:
+  database: gallery
+  username: jupyter
+  password:
+  host:
+  port:
+
+# Solr full-text server configuration
+solr:
+  scheme:
+  hostname:
+  port:
+  home:
+
+# Location of notebooks, etc on the filesystem
+directories:
+  data: <%= Rails.root %>
+  cache: <%= Rails.root.join('cache') %>
+  repo: <%= Rails.root.join('repo') %>
+  change_requests: <%= Rails.root.join('change_requests') %>
+  staging: <%= Rails.root.join('staging') %>
+  extensions: <%= Dir[Rails.root.join('*extensions')] %>
+
+# Storage options
+storage:
+  track_revisions: false
+  #Save Notebooks to the database using the notebook_file_class
+  database_notebooks: false
+
+# Run rufus scheduler thread internally
+scheduler:
+  internal: true
+
+# cron schedules
+cron:
+  age_off: 15 0 * * * UTC # 1215am daily
+  notebook_dailies: 30 0 * * * UTC # 1230am daily
+  user_summaries: 35 0 * * * UTC # 1235am daily
+  notebook_summaries: 0 1 * * * UTC # 0100am daily
+  daily_subscription_email: 0 8 * * 1-5 UTC # 0800am Monday-Friday
+  nightly_computation: 0 4 * * * UTC # 0400am daily
+
+# Notebook review options
+reviews_enabled: false
+reviews:
+  technical:
+    enabled: false
+    label: technical
+  functional:
+    enabled: false
+    label: functional
+  compliance:
+    enabled: false
+    label: compliance
+
+user_permissions:
+  propose_review: false
+
+# Email options
+email:
+  general_from:
+  exceptions_from:
+  exceptions_to:
+
+# Instrumentation options
+instrumentation:
+  enabled: true
+
+# Only admins may apply these tags.
+restricted_tags:
+  - trusted
+  - buildingblocks
+
+# Configuration for proposed tags during notebook upload.
+# Patterns are regular expressions scanned against notebook content.
+# Mappings are arrays of tags that should be proposed for the
+#   given string when captured by one of the patterns.
+tag_proposal:
+  patterns:
+  mappings:
+    gruff: [charts]
+    nyaplot: [charts]
+    pdf-reader: [pdf]
+    rubyXL: [excel]
+
+# Learning menu
+# landing: uuid of main Learning notebook
+# menu:
+#   - item: Menu Item 1
+#     link: /tags/whatever
+#   - item: Menu Item 2
+#     link: http://www.python.org
+learning:
+  landing:
+  menu: []
+
+# View Preferences
+slim:
+  home_jumbtron: default_home_jumbotron
+  notebook_listing_label: custom_notebook_listing_label
+  notebook_title: notebook_jumbotron_title
+  small_tile_title: notebook_tile_small_title
+  table_nb_description: table_nb_description
+  table_nb_title: table_nb_title
+  table_notebook_title_text_only: table_notebook_title_text_only
+  table_row_heading_label: custom_table_row_heading_label
+
+# Notebook Title Parsing Preferences
+notebook_title_parse:
+  parsing enabled: false
+  after_character:
+
+# Markdown prefereces
+markdown:
+  description_enabled: false
+
+# Run in Jupyter Preferences
+run_in_jupyter:
+  no_instance_title: No Jupyter Instance
+  no_instance_message: You must have a Jupyter instance to send notebooks to. If you already have one, then you can specify that notebook in your <a href='/environments'>environments</a>.
+  run_failed_message:
+
+# Terms of Service Agreement
+tos:
+  message: |
+    I acknowledge that I have all intellectual property rights and approvals (if applicable)
+    <br>
+    for the content contained within this notebook.
+
+# URL associated with the feedback page for this instance of the Gallery (i.e. Github issues page, etc)
+feedback:
+  url:
+  beta_poll: https://github.com/nbgallery/nbgallery/issues
+
+# Video information
+video:
+  overview:
+  info:
+
+# Notebook entries
+notebooks:
+  learning:
+
+# Registration settings
+registration:
+  require_admin_approval: false
+  allowed_domains: []
+
+# Kernel language display
+languages:
+  default:
+    banner: nbgallery_banner.png
+    thumbnail: nb_logo_thumbnail.png
+    caption:
+    link: /languages
+    tutorial:
+    documentation:
+  bash:
+    banner: bash_banner.png
+    thumbnail: bash_thumbnail.png
+    caption: "$ awesome"
+  c++:
+    banner: cplusplus_banner.png
+    thumbnail: cplusplus_thumbnail.png
+    caption: "Because it's all 1's and 0's at the end of the day."
+  javascript:
+    banner: javascript_banner.png
+    thumbnail: javascript_logo_thumbnail.png
+    caption: "Does anyone really like this?"
+  octave:
+    banner: octave_banner.png
+    thumbnail: octave_logo_thumbnail.png
+    caption: "Time for some sweet mathematical music."
+  python:
+    banner: python.png
+    thumbnail: python_thumbnail.png
+    caption: "Everyone else is doing it."
+  ruby:
+    banner: ruby_banner.png
+    thumbnail: ruby_thumbnail.png
+    caption: "Why use anything else?"
+  R:
+    banner: R.png
+    thumbnail: r_thumbnail.png
+    caption: "Congrats on your PhD, this is the language for you."
+  scala:
+    banner: scala_banner.png
+    thumbnail: scala_logo_thumbnail.png
+    caption: "It's all the rage nowadays."
+  pig:
+    banner: pig_banner.png
+    thumbnail: pig_thumbnail.png
+    caption: "Oink oink"
+  go:
+    banner: go_banner.png
+    thumbnail: go_thumbnail.png
+    caption: "Google's doing it, so it has to be good right?"
+  lua:
+    banner: lua_banner.jpg
+    thumbnail: lua_thumbnail.png
+    caption: "As fast as... itself"
+  groovy:
+    banner: groovy_banner.jpg
+    thumbnail: groovy_thumbnail.png
+    caption: "Apache, jump on it!"
+
+#If username_login_allowed is set to false, registration is disabled
+username_login_allowed: true
+# Users who authenticate with oauth are still automatically registered
+registration_allowed: true
+#Configuration to allow NBGallery to act as an oauth provider
+oauth_provider_enabled: false
+
+#search:
+#  federated:
+#    - url: baseurl of other gallery
+#      name: Name of other gallery
+#      tagline: tagline/subtitle for other gallery
+#  allowed_cors:
+#    - domain/ip[:port] for other gallery
+anonymous_access: true
+
+#Collection of resources title
+external_resources_title: "External Resources"
+#Individual resource label
+external_resources_label: "External Resource"
+
+#allow sharing by email address in addition to username
+share_by_email: false
+
+pagination:
+  paginate_large_notebooks: true
+  cells_per_page: 20
+  notebooks_per_page: 20

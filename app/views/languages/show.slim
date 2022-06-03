@@ -1,0 +1,11 @@
+div.content-container.mobile-expanding
+  div.carousel.slide
+    div.carousel-inner
+      div.item.active
+        ==image_tag(@config[:banner], aria: {"hidden": true}, class:"show", style:"display: none")
+        div.content-container
+          div.carousel-caption
+            h1 #{@lang.capitalize} #{@version || ''}
+            p.lead ==@config[:caption]
+
+==render partial: 'notebooks'

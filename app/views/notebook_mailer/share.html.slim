@@ -1,0 +1,16 @@
+h2 Notebook shared with you
+p
+  a href="#{@url + user_path(@owner)}"
+    | #{@owner.name}
+    - if !@owner.org.blank?
+      |  (#{@owner.org})
+  '  has shared the notebook
+  a href="#{@url + notebook_path(@notebook)}" #{@notebook.title}
+  |   with you.
+-unless @message.blank?
+  p
+    strong Message:
+    i
+      |  "
+      ==@message
+      | "

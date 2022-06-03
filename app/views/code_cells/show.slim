@@ -1,0 +1,91 @@
+==render partial: 'notebooks/notebook_info_jumbotron'
+div.content-container
+  div.return
+    a href="#{notebook_path(@notebook)}"
+      i.fa.fa-share aria-hidden="true"
+      | Return to Notebook
+  h2.cell-count Code Cell #{@code_cell.cell_number + 1} / #{@notebook.code_cells.count}
+  div.code-cell-nav
+    -if @code_cell.cell_number > 0
+      a.previous href="#{@code_cell.cell_number}" rel="nofollow"
+        i.fa.fa-chevron-left aria-hidden="true"
+        | previous
+    -if @code_cell.cell_number < @notebook.code_cells.count - 1
+      a.next href="#{@code_cell.cell_number + 2}" rel="nofollow"
+        | next
+        i.fa.fa-chevron-right aria-hidden="true"
+  br
+  ==render partial: 'cell', locals: { jn: @notebook.notebook, cell: @cell_json, code_cell: @code_cell, health_status: nil, source: @source }
+
+  h3 Health status
+  div.row
+    div.col-md-4
+      div.panel.panel-primary
+        div.panel.panel-heading
+          h4.panel-title Execution Metrics
+        table.table.tabular.centered-table
+          caption.sr-only Execution Metrics
+          tr
+            th Total execution logs
+            td ==@execs
+          tr
+            th ... in last 30 days
+            td ==@execs_last30
+          tr
+            th Successful executions
+            td ==@execs_pass
+          tr
+            th ... in last 30 days
+            td ==@execs_pass_last30
+          tr
+            th Failed executions
+            td ==@execs_fail
+          tr
+            th ... in last 30 days
+            td ==@execs_fail_last30
+  div.row
+    div.col-md-12
+      div.panel.panel-primary
+        div.panel.panel-heading
+          h4.panel-title Cell executions by day, last 30 days
+        -if @executions_by_day.blank?
+          div.panel.panel-body No executions recorded
+        -else
+          =column_chart(@executions_by_day, stacked: true, colors: chart_colors_blue_red)
+
+  h3 Other notebooks
+  div.row
+    div.col-md-6
+      div.panel.panel-primary
+        div.panel.panel-heading
+          h4.panel-title Notebooks with similar cells
+        table.table.tabular.clean-table
+          caption.sr-only Notebooks with similar cells
+          thead
+            tr
+              th Notebook
+              th Cell
+              th Score
+          tbody
+            -if !@similar.blank?
+              -@similar.each do |cell, score|
+                tr
+                  td ==link_to_notebook(cell.notebook)
+                  td ==link_to(cell.cell_number + 1, code_cell_path(cell))
+                  td ==score
+    div.col-md-6
+      div.panel.panel-primary
+        div.panel.panel-heading
+          h4.panel-title Notebooks with identical cells
+        table.table.tabular.clean-table
+          caption.sr-only Notebooks with identical cells
+          thead
+            tr
+              th Notebook
+              th Cell
+          tbody
+            -if !@identical.blank?
+              -@identical.each do |cell, score|
+                tr
+                  td ==link_to_notebook(cell.notebook)
+                  td ==link_to(cell.cell_number + 1, code_cell_path(cell))

@@ -1,0 +1,15 @@
+div.nb-description.comment.more
+  -if nb.description.length > 500
+    p.minimize.tooltip-right title="#{nb.description}"
+      span.sr-only Description of Notebook
+      span.hidden aria-hidden="true"
+        | :
+      span.sr-only #{" "}
+      ==nb.description.truncate(500,omission: "...")
+  -else
+    p
+      span.sr-only Description of Notebook
+      span.hidden aria-hidden="true"
+        | :
+      span.sr-only #{" "}
+      ==nb.description.truncate(500,omission: "...")

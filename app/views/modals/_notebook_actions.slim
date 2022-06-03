@@ -1,0 +1,508 @@
+div.modal.fade id="sharingModal" aria-labelledby="shareHeader" aria-describedby="shareDescription" role="dialog" style="display: none" tabindex="0"
+  div.modal-dialog
+    div.modal-content
+      form id="sharingForm" enctype="multipart/form-data" data-toggle="validator" role="form"
+        div.modal-header
+          h1.modal-title id="shareHeader" Share a Notebook With Individuals
+          p.sr-only id="shareDescription" Dialog for sharing a notebook with other users
+          button.close type="button" data-dismiss="modal"
+            span aria-hidden="true" &times;
+            span.sr-only Close Dialog
+        div.modal-body
+          div.alert.alert-info.modal-alert
+            i.fa.fa-info-circle aria-hidden="true"
+            span Sharing a notebook with individuals will also give them edit access to the notebook.
+          div.alert.alert-danger.center hidden="true" id="sharingErrorWarning"
+          div.form-group
+            div.input-group
+              span.input-group-addon.upload-addon Share with
+              input.form-control id="shareWithEmail" type="text" name="shares" placeholder="Enter usernames"
+          div.form-group.has-feedback
+            div.input-group
+              span.input-group-addon.upload-addon Message
+              textarea.form-control id="shareNotebookMessage" name="message" placeholder="Send a message here (optional)"
+            div.help-block.with-errors
+          div.modal-footer
+            div
+              button.btn.btn-danger type="button" data-dismiss="modal" Cancel
+              button.btn.btn-success type="submit" id="sharingModalSubmit" Share
+
+div.modal.fade id="commentsModal" aria-labelledby="commentHeader" aria-describedby="commentDescription" role="dialog" style="display: none" tabindex="0"
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h1.modal-title id="commentHeader" Notebook Comments
+        p.sr-only id="commentDescription" Dialog for viewing and creating new comments on the notebook
+        button.close type="button" data-dismiss="modal"
+          span aria-hidden="true" &times;
+          span.sr-only Close Dialog
+      div.modal-body
+        div id="commentsSection"
+          ==commontator_thread(@notebook)
+        div.modal-footer
+          button.btn.btn-danger data-dismiss="modal"
+            | Close
+            span.sr-only
+              |  Dialog
+
+javascript:
+  $(document).ready(function(){
+    var typingTimer;
+    var delay = 500;
+    var newOwnerInput = $('#newOwner');
+    $(newOwnerInput).on('keyup', function() {
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(filterResults,delay);
+    });
+    $(newOwnerInput).on('keydown', function() {
+      clearTimeout(typingTimer);
+      $('#changeOwnerModalSubmit').attr('disabled', true);
+    });
+    function filterResults() {
+      var url = '/notebooks/#{@notebook.uuid}/filter_owner';
+      var value = $('#newOwner').val();
+      var data = "query=" + $('#newOwner').val();
+      $.ajax({
+        url: url,
+        data: data,
+        type: 'GET',
+        success: function(result) {
+          if ($("body").hasClass("ultra-dark-theme")) {
+            $('#ownershipAutocompleteContainer').html('<div class="center" id="hiddenSpinner" role="alert">#{image_tag('nbgallery_logo_white.png', class:'center ld ld-breath logo-loading', alt:"Loading content")}</div>')
+          }
+          else {
+            $('#ownershipAutocompleteContainer').html('<div class="center" id="hiddenSpinner" role="alert">#{image_tag('nbgallery_logo.png', class:'center ld ld-breath logo-loading', alt:"Loading content")}</div>')
+          }
+          setTimeout(function(){
+            $('#ownershipAutocompleteContainer').html(result);
+            $('#ownershipDropdown').attr("aria-expanded", "true");
+            $('#ownershipDropdown').toggleClass('open');
+            $('#ownershipDropdown').css("display","block");
+          },300);
+        },
+        error: function(response) {
+          bootbox.alert('Filtering Results Failed: ' + response.statusText);
+        },
+      });
+      return false;
+    }
+  });
+
+div.modal.fade id="changeOwnerModal" aria-labelledby="changeOwnerHeader" aria-describedby="changeOwnerDescription" role="dialog" style="display: none" tabindex="0"
+  div.modal-dialog
+    div.modal-content
+      form id="changeOwnerForm" enctype="multipart/form-data" data-toggle="validator" role="form"
+        div.modal-header
+          h1.modal-title id="changeOwnerHeader" Change Owner
+          p.sr-only id="changeOwnerDescription" Dialog for granting ownership of your notebook from you to a group for example
+          button.close type="button" data-dismiss="modal"
+            span aria-hidden="true" &times;
+            span.sr-only Close Dialog
+        div.modal-body
+          div.alert.alert-danger.center hidden="true" id="changeOwnerErrorWarning"
+          div.form-group
+            div.input-group
+              span.input-group-addon.upload-addon Current Owner &nbsp;
+              span.readonly-form-control.form-control #{(@notebook.owner_type=="User" ? User.find(@notebook.owner_id).user_name : Group.find(@notebook.owner_id).name)}
+          div.form-group
+            div.input-group
+              span.input-group-addon.upload-addon New Owner
+              input.form-control id="newOwner" type="text" name="owner" value="" autocomplete="off" placeholder="Username or Group Name"
+            div id="ownershipAutocompleteContainer"
+              ==render :partial => "notebooks/ownership_autocomplete", :locals => {:query => ""}
+          div.modal-footer
+            div
+              button.btn.btn-danger type="button" data-dismiss="modal" Cancel
+              button.btn.btn-success type="submit" id="changeOwnerModalSubmit" disabled="true" Change Owner
+
+div.modal.fade.notebookModalsSmall id="editNotebookModal" aria-labelledby="editModalTitle" aria-describedby="editNotebookDescription" role="dialog" style="display: none" tabindex="0"
+  div.modal-content
+    div.modal-header
+      h1.modal-title id="editModalTitle"
+      p.sr-only id="editNotebookDescription"
+      button.close type="button" data-dismiss="modal"
+        span aria-hidden="true" &times;
+        span.sr-only Close Dialog
+    div.modal-body
+      form id="editUploadForm" enctype="multipart/form-data" data-toggle="validator" role="form"
+        div.alert.alert-danger.text-center hidden="true" id="editUploadErrorWarning"
+        div.form-group.has-feedback
+          div.input-group
+            span.input-group-addon.upload-addon Notebook
+            -if params[:staged]
+              input.form-control type="text" name="staged" readonly=true value=params[:staged]
+            -else
+              input.form-control type="file" name="file" accept=".ipynb" required=true
+          span.glyphicon.form-control-feedback aria-hidden="true"
+        -if @user.can_edit?@notebook
+          input type="hidden" name="editModal" value="true"
+          input type="hidden" name="overwrite" value="true"
+        input type="hidden" name="eventType"  id="eventType"
+        input type="hidden" name="editStagingID" id="editStagingID" value="#{params[:staged] ? params[:staged] : '' }"
+        input type="hidden" name="notebook_id" value="#{@notebook.uuid}"
+        ==render partial: "tos"
+        div.modal-footer
+          div class="form-group"
+            button.btn.btn-danger type="button" data-dismiss="modal" Cancel
+            button.btn.btn-primary.modal-activate type="submit" id="editUploadSubmit" aria-label="Proceed to next dialog" Next
+
+div.modal.fade.notebookModalsSmall id="stageEdit" aria-labelledby="stageEditModalTitle" aria-describedby="stageEditDescription" role="dialog" style="display: none" tabindex="0"
+  div.modal-content
+    div.modal-header
+      h1.modal-title id="stageEditModalTitle"
+      p.sr-only id="stageEditDescription"
+      button.close type="button" data-dismiss="modal"
+        span aria-hidden="true" &times;
+        span.sr-only Close Dialog
+    div.modal-body
+      form id="stageEditForm" enctype="multipart/form-data" data-toggle="validator" role="form"
+        div.alert.alert-danger.text-center hidden="true" id="editStageErrorWarning"
+        div.form-group.has-feedback
+          div.input-group
+            span.input-group-addon.upload-addon Notebook
+            -if params[:staged]
+              input.form-control type="text" name="staged" readonly=true value=params[:staged]
+            -else
+              input.form-control type="text" id="editStagedName" name="staged" value="#{@notebook.title}" readonly=true
+          span.glyphicon.form-control-feedback aria-hidden="true"
+        ==render partial: "custom_fields", locals: {is_upload: false}
+        -if @notebook.revisions != nil && GalleryConfig.storage.track_revisions
+          div.form-group.has-feedback id="stageCommitMessage"
+            div.input-group
+              span.input-group-addon.upload-addon Change Log
+              textarea.form-control.auto-expand name="summary" id="stageSummary" placeholder="Enter a short description of what was changed" minlength="3" maxlength="250" required=true
+            span.remaining-characters-warning
+            div.help-block.with-errors
+        div.form-group.has-feedback id="stageChangeRequestComment" hidden="yes"
+          div.input-group
+            span.input-group-addon.upload-addon Comments
+            textarea.form-control name="comment" id="stageComment" placeholder="Enter additional message to the owner for this change request (optional)"
+          div.help-block.with-errors
+          span.glyphicon.form-control-feedback aria-hidden="true"
+        div.form-group id="editTagsSection"
+          div.input-group data-toggle="tooltip" title="Enter tags here"
+            span.input-group-addon.upload-addon Tags
+            input.form-control id="editStageTags" type="text" value="#{@notebook.tags.pluck(:tag).join(',')}" name="tags"
+        ==render partial: "tos"
+        div.modal-footer
+          div class="form-group"
+            button.btn.btn-danger type="button" onClick="window.location.replace(window.location.origin + window.location.pathname)" Cancel
+            button.btn.btn-success.modal-activate type="submit" id="editStageSubmit" Upload
+          div id="editStageFeedbackProgressBar"
+
+div.modal.fade.notebookModalsSmall id="feedbackModal" aria-labelledby="provideFeedbackHeader" aria-describedby="provideFeedbackDescription" role="dialog" style="display: none" tabindex="0"
+  div.modal-content
+    div.modal-header
+      h1.modal-title id="provideFeedbackHeader" Provide Feedback
+      p.sr-only id="provideFeedbackDescription" Dialog for submitting feedback about the notebook to the owner or owners to read
+      button.close type="button" data-dismiss="modal"
+        span aria-hidden="true" &times;
+        span.sr-only Close Dialog
+    div.modal-body
+      form id="feedbackForm" enctype="multipart/form-data" data-toggle="validator" role="form"
+        div.alert.alert-danger.center hidden="true" id="uploadErrorWarning"
+        div.form-group.has-feedback
+          div.input-group
+            span.input-group-addon.upload-addon Notebook
+            input.form-control type="text" name="staged" value=@notebook.title readonly=true
+        div.form-group.has-feedback id="runFeedback"
+          div.input-group
+            span.input-group-addon Did you run the notebook?
+            label.radio-inline.feedback
+              input type="radio" name="ran" id="runNotebookYes" value="yes" yes
+            label.radio-inline
+              input type="radio" name="ran" id="runNotebookNo" value="no" no
+        div.form-group.has-feedback id="workedFeedback" hidden="true"
+          div.input-group
+            span.input-group-addon Did it work?
+            label.radio-inline.feedback
+              input type="radio" name="worked" id="workedYes" value="yes" yes
+            label.radio-inline
+              input type="radio" name="worked" id="workedNo" value="no" no
+        div.form-group.has-feedback id="broken" hidden="true"
+          div.input-group
+            span.input-group-addon.upload-addon Broken?
+            textarea.form-control id="brokenFeedback" name="broken_feedback" placeholder="Any comments on why it didn't work?"
+          div.help-block.with-errors
+          span.glyphicon.form-control-feedback aria-hidden="true"
+        div.form-group.has-feedback
+          div.input-group
+            span.input-group-addon.upload-addon Feedback
+            textarea.form-control id="generalFeedback" name="general_feedback" placeholder="Please provide feedback" required=true
+          div.help-block.with-errors
+          span.glyphicon.form-control-feedback aria-hidden="true"
+        div.modal-footer
+          div
+            button.btn.btn-danger type="button" data-dismiss="modal" Cancel
+            button.btn.btn-success type="submit" id="feedbackSubmit" Submit
+          div id="feedbackProgressBar"
+
+div.modal.fade id="showNotebookUUIDModal" aria-labelledby="showNotebookUUIDHeader" aria-describedby="showNotebookUUIDDescription" role="dialog" style="display: none" tabindex="0"
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        h1.modal-title id="showNotebookUUIDHeader" Notebook UUID
+        p.sr-only id="showNotebookUUIDDescription" Dialog displaying notebook's universal unique identifier string
+        button.close type="button" data-dismiss="modal"
+          span aria-hidden="true" &times;
+          span.sr-only Close Dialog
+      div.modal-body
+        p
+          | The notebook UUID is
+          span aria-hidden="true"
+            | :
+          | #{" "}
+          span.uuid ==@notebook.uuid
+        div.modal-footer
+          div
+            button.btn.btn-danger data-dismiss="modal"
+              | Close
+              span.sr-only
+                |  Dialog
+-if @user.admin? || (GalleryConfig.user_permissions.propose_review && @user.can_edit?(@notebook, true)) && GalleryConfig.reviews_enabled
+  div.modal.fade id="proposeReviewModal" aria-labelledby="proposeReviewHeader" aria-describedby="proposeReviewDescription" role="dialog" style="display: none" tabindex="0"
+    div.modal-dialog
+      div.modal-content
+        div.modal-header
+          h1.modal-title id="proposeReviewHeader" Propose for Review
+          p.sr-only id="proposeReviewDescription" Dialog for generating a new review or reviews for notebook
+          button.close type="button" data-dismiss="modal"
+            span aria-hidden="true" &times;
+            span.sr-only Close Dialog
+        div.modal-body
+          -num_types = 0
+          -num_types += 1 if GalleryConfig.reviews.technical.enabled
+          -num_types += 1 if GalleryConfig.reviews.functional.enabled
+          -num_types += 1 if GalleryConfig.reviews.compliance.enabled
+          -if num_types == 0
+            div.center
+              p No types of reviews enabled
+            div.modal-footer
+              div
+                button.btn.btn-danger data-dismiss="modal" Cancel
+          -else
+            form id="proposeReviewForm" enctype="multipart/form-data" data-toggle="validator" role="form"
+              div.alert.alert-danger.center hidden="true" id="proposeReviewErrorWarning"
+              div.form-group.has-feedback id="proposeReviewSelection"
+                div.input-group
+                  span.input-group-addon Reviews to Generate
+                  -if GalleryConfig.reviews.technical.enabled
+                    label.radio-inline.feedback
+                      input type="checkbox" name="technical" id="proposeTechnicalReview" value="yes" #{GalleryConfig.reviews.technical.label.capitalize}
+                      span.sr-only  Review
+                  -if GalleryConfig.reviews.functional.enabled
+                    label.radio-inline
+                      input type="checkbox" name="functional" id="proposeFunctionalReview" value="yes" #{GalleryConfig.reviews.functional.label.capitalize}
+                      span.sr-only  Review
+                  -if GalleryConfig.reviews.compliance.enabled
+                    label.radio-inline
+                      input type="checkbox" name="compliance" id="proposeComplianceReview" value="yes" #{GalleryConfig.reviews.compliance.label.capitalize}
+                      span.sr-only  Review
+              div.form-group.has-feedback id="proposeReviewComment"
+                div.input-group
+                  span.input-group-addon.upload-addon Comments
+                  textarea.form-control name="comments" id="proposeReviewComment" placeholder="Enter why this notebook is being submitted for review." required=true
+              div.modal-footer
+                div
+                  button.btn.btn-danger type="button" data-dismiss="modal" Cancel
+                  button.btn.btn-success type="submit" id="proposeReviewSubmit" Propose Reviews
+
+javascript:
+  $(document).ready(function(){
+    var typingTimer;
+    var delay = 500;
+    var newAltNotebook = $('#notebookAutocomplete');
+    $(newAltNotebook).on('keyup', function() {
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(autocompleteNotebooks,delay);
+    });
+    $(newAltNotebook).on('keydown', function() {
+      clearTimeout(typingTimer);
+      $('#deprecateNotebookSubmit').attr('disabled', true);
+    });
+    function autocompleteNotebooks() {
+      var url = '/notebooks/#{@notebook.uuid}/autocomplete_notebooks';
+      var value = $('#notebookAutocomplete').val();
+      var data = "query=" + $('#notebookAutocomplete').val();
+      $.ajax({
+        url: url,
+        data: data,
+        type: 'GET',
+        success: function(result) {
+          if ($("body").hasClass("ultra-dark-theme")) {
+            $('#notebookAutocompleteContainer').html('<div class="center" id="hiddenSpinner" role="alert">#{image_tag('nbgallery_logo_white.png', class:'center ld ld-breath logo-loading', alt:"Loading content")}</div>')
+          }
+          else {
+            $('#notebookAutocompleteContainer').html('<div class="center" id="hiddenSpinner" role="alert">#{image_tag('nbgallery_logo.png', class:'center ld ld-breath logo-loading', alt:"Loading content")}</div>')
+          }
+          setTimeout(function(){
+            $('#notebookAutocompleteContainer').html(result);
+            $('#notebooksAutocompleteDropdown').attr("aria-expanded", "true");
+            $('#notebooksAutocompleteDropdown').toggleClass('open');
+            $('#notebooksAutocompleteDropdown').css("display","block");
+          },300);
+        },
+        error: function(response) {
+          bootbox.alert('Filtering Results Failed: ' + response.statusText);
+        },
+      });
+      return false;
+    }
+  });
+
+-if @user.owner(@notebook)
+  div.modal.fade id="deprecateNotebookModal" aria-labelledby="deprecateNotebookHeader" aria-describedby="deprecateNotebookDescription" role="dialog" style="display: none" tabindex="0"
+    div.modal-dialog
+      div.modal-content
+        div.modal-header
+          h1.modal-title id="deprecateNotebookHeader" Deprecate Notebook
+          p.sr-only id="deprecateNotebookDescription" Dialog for deprecating a notebook
+          button.close type="button" data-dismiss="modal"
+            span aria-hidden="true" &times;
+            span.sr-only Close Dialog
+        div.modal-body
+          div.alert.alert-danger.center hidden="true" id="deprecateNotebookErrorWarning"
+          form id="deprecateNotebookForm" enctype="multipart/form-data" data-toggle="validator" role="form"
+            div.form-group
+              div.input-group
+                span.input-group-addon Freeze Notebook
+                select.form-control id="freezeNotebook" name="freeze"
+                  -if @notebook.deprecated_notebook != nil && @notebook.deprecated_notebook.disable_usage
+                    option value="no" Allow users to proceed at their own risk
+                    option value="yes" selected="selected" Prevent users from running this notebook (disable)
+                  -else
+                    option value="no" Allow users to proceed at their own risk
+                    option value="yes" Prevent users from running this notebook (disable)
+            div.form-group.has-feedback
+              div.input-group
+                span.input-group-addon.upload-addon Reasoning
+                -if @notebook.deprecated_notebook == nil
+                  textarea.form-control type="text" name="comments" id="deprecateNotebookReasoning" placeholder="Enter why this notebook is being deprecated" minlength="3" maxlength="500" required=true
+                -else
+                  textarea.form-control type="text" name="comments" id="deprecateNotebookReasoning" placeholder="Enter why this notebook is being deprecated" minlength="3" maxlength="500" required=true
+                    ==@notebook.deprecated_notebook.reasoning
+              span.remaining-characters-warning
+              div.help-block.with-errors
+            div.form-group
+              div.input-group
+                span.input-group-addon.upload-addon Recommended Alternate Notebook(s)
+                input.form-control id="notebookAutocomplete" autocomplete="off" placeholder="(optional) Notebook name or ID" type="text"
+              div.tokenfield
+                -if @notebook.deprecated_notebook != nil && @notebook.deprecated_notebook.alternate_notebook_ids != nil
+                  -alternate_notebooks_array = Notebook.where(id: JSON.parse(@notebook.deprecated_notebook.alternate_notebook_ids))
+                  -alternate_notebooks_array.each do |alternate_notebook|
+                    div.token data-id="#{alternate_notebook.id}"
+                      span.token-label
+                        strong
+                          span.show-inline aria-hidden="true" style="display: none"
+                            | NB
+                          span.sr-only
+                            | Notebook with ID
+                          span aria-hidden="true" #{":"}
+                          span.sr-only #{" "}
+                          span.notebook-id ==alternate_notebook.id
+                        span #{" "}
+                        span.sr-only
+                          ' Titled
+                        span.notebook-title ==alternate_notebook.title
+                      span.sr-only #{" "}
+                      a.close.tooltips href="#" tab-index="-1" title="Remove as Alternate Notebook"
+                        span aria-hidden="true" &times;
+                        span.sr-only Remove alternate notebook with id of "#{alternate_notebook.id}"
+              div id="notebookAutocompleteContainer"
+                ==render :partial => "notebooks/notebooks_autocomplete", :locals => {:query => ""}
+            div.modal-footer
+              div
+                button.btn.btn-danger type="button" data-dismiss="modal" Cancel
+                -if @notebook.deprecated_notebook != nil
+                  button.btn.btn-danger.remove-deprecation-status type="button"
+                    | Remove Deprecation
+                    span.sr-only
+                      |  Status
+                button.btn.btn-success type="submit" id="deprecateNotebookSubmit" Deprecate Notebook
+
+
+div.modal.fade id="addResourceModal" aria-labelledby="addResourceHeader" aria-describedby="addResourceDescription" role="dialog" style="display: none" tabindex="0"
+  div.modal-dialog
+    div.modal-content
+      form id="addResourceForm" enctype="multipart/form-data" data-toggle="validator" role="form"
+        div.modal-header
+          h1.modal-title id="addResourceHeader" Add a new #{GalleryConfig.external_resources_label}
+          p.sr-only id="addResourceDescription" Dialog for adding a new #{GalleryConfig.external_resources_label}
+          button.close type="button" data-dismiss="modal"
+            span aria-hidden="true" &times;
+            span.sr-only Close Dialog
+        div.modal-body
+          div.alert.alert-danger.center hidden="true" id="addResourceError"
+          div.form-group.has-feedback
+            div.input-group
+              span.input-group-addon.upload-addon #{GalleryConfig.external_resources_label} Title
+              input.form-control id="newResourceTitle" type="text" name="resourceTitle" value="" autocomplete="off" placeholder="Title for the #{GalleryConfig.external_resources_label}"
+            div.help-block.with-errors
+          div.form-group.has-feedback
+            div.input-group
+              span.input-group-addon.upload-addon #{GalleryConfig.external_resources_label} URL
+              input.form-control id="newResourceHref" type="url" name="resourceHref" value="" autocomplete="off" placeholder="URL for the #{GalleryConfig.external_resources_label}"
+            div.help-block.with-errors
+          div.modal-footer
+            button.btn.btn-danger data-dismiss="modal"
+              | Cancel
+            button.btn.btn-success type="submit" id="addResourceFormSubmit" disabled="true" Add #{GalleryConfig.external_resources_label}
+
+  javascript:
+    $(document).ready(function(){
+      /* Not perfect but makes sure things start cleanly and supports both IP and domain name based URLs */
+      var testHref = new RegExp("^https?:\\/\\/" +
+                              "((([a-z\\d-]+\\.)+(a-z){2,})||((\\d{1,3}\\.){3}\\d{1,3}))" +
+                              "(\\:\\d+)?");
+      $('#newResourceTitle').on('change',function(){
+        validateNewResource();
+      });
+      $('#newResourceTitle').on('keydown',function(){
+        validateNewResource();
+      });
+      $('#newResourceHref').on('change',function(){
+        validateNewResource();
+      });
+      $('#newResourceHref').on('keydown',function(){
+        validateNewResource();
+      });
+      function validateNewResource(){
+        if( $('#newResourceTitle').val().length > 0 && $('#newResourceHref').val().length > 11  && testHref.test($('#newResourceHref').val()) ){
+          $('#addResourceFormSubmit').attr('disabled',false);
+        }
+        else{
+          $('#addResourceFormSubmit').attr('disabled',true);
+        }
+      }
+
+      /* Placed here because I need to use ruby vars*/
+      $('.externalResources .delete-icon').keypress(function(e){
+        var keycode = (e.keyCode ? event.keyCode : event.which);
+        if(keycode == '13' || keycode == '32'){
+          e.preventDefault();
+          $(this).click();
+        }
+      });
+      $('.externalResources .delete-icon').click(function(e){
+        e.preventDefault();
+        resource_id = e.currentTarget.parentNode.id.replace("resource-","");
+        bootbox.confirm("Are you sure you want to delete this #{GalleryConfig.external_resources_label}?", function(userResponse){
+          if (userResponse == true){
+            bootboxPending('Deleting Resource!');
+            $.ajax({
+              url: '/resources/' + resource_id,
+              type: 'DELETE',
+              success: function(response){
+                bootbox.hideAll();
+                location.reload();
+              },
+              error: function(response){
+                $('#addResourceError').html = response;
+                $('#addResourceError').attr('hidden',false);
+              }
+            });
+          }
+        })
+      });
+    });

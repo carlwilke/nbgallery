@@ -1,0 +1,7 @@
+div.content-container
+  h1 Editing User
+  ==render "form"
+  ==link_to "Show", @viewed_user
+  span.sr-only #{" "}
+  span.vertical-divider aria-hidden="true" #{"|"}
+  ==link_to "Back", users_path

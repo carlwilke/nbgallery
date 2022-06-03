@@ -1,0 +1,114 @@
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  DisplayCopNames: true
+  TargetRubyVersion: 2.3
+  Exclude:
+    - 'docker/**/*' # local docker storage
+    - 'app/models/commontator/*.rb'
+    - 'db/schema.rb' # generated file
+    - 'bin/*' # rails framework
+
+Metrics/AbcSize:
+  Max: 50
+  Exclude:
+    - 'test/*/*.rb'
+
+Metrics/ClassLength:
+  Max: 500
+  Exclude:
+    - 'test/*/*.rb'
+
+Metrics/ModuleLength:
+  Max: 200
+  Exclude:
+    - 'test/*/*.rb'
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+  Exclude:
+    - 'test/*/*.rb'
+
+Metrics/LineLength:
+  Max: 120
+  Exclude:
+    - 'config/initializers/devise.rb'
+    - 'test/*/*.rb'
+
+Metrics/MethodLength:
+  Max: 50
+  Exclude:
+    - 'test/*/*.rb'
+
+Metrics/PerceivedComplexity:
+  Max: 10
+  Exclude:
+    - 'test/*/*.rb'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'config/environments/*rb'
+
+# Extra blank lines between methods helps readability
+Layout/EmptyLines:
+  Enabled: false
+
+# Turn off Frozen String Literal Comment
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+Style/EmptyMethod:
+  Enabled: false
+
+# There are legitimate uses for low-precedence and/or/not
+Style/AndOr:
+  Enabled: false
+
+Style/Not:
+  Enabled: false
+
+# You don't usually put a space if you comment out a line of code
+Layout/LeadingCommentSpace:
+  Enabled: false
+
+# Sorry, too awesome to ban
+Style/RescueModifier:
+  Enabled: false
+
+# Every other language goes with no_space
+Layout/SpaceAroundEqualsInParameterDefault:
+  EnforcedStyle: no_space
+
+# We like no_space here
+Layout/SpaceInsideBlockBraces:
+  EnforcedStyle: no_space
+  SpaceBeforeBlockParameters: false
+
+# The Rails guide disagrees
+Rails/HasAndBelongsToMany:
+  Enabled: false
+
+# We're not on Rails 5 yet
+Rails/ApplicationRecord:
+  Enabled: false
+Rails/ApplicationJob:
+  Enabled: false
+
+# This is a new rule and we don't want to update old migrations.
+# On a fresh install they'll be fast enough anyway.
+Rails/BulkChangeTable:
+  Exclude:
+    - 'db/migrate/2016*'
+    - 'db/migrate/2017*'
+    - 'db/migrate/201803*'
+
+# We only do this to quiet rubocop
+Style/CommentedKeyword:
+  Enabled: false
+
+# Micromanagement
+Naming/UncommunicativeMethodParamName:
+  Enabled: false

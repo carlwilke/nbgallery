@@ -1,0 +1,18 @@
+css:
+    #wrapper {
+        background-color: #1a1a1a;
+        padding-bottom: 2em;
+    }
+    #welcomeVideo {
+        margin-top: 4em;
+    }
+    .footer {
+        margin-top: 0;
+    }
+body
+  div.content-container
+    -if GalleryConfig.video.info != nil
+      div.alert.alert-info id="vidInfo"
+        i.fa.fa-info-circle aria-hidden="true"
+        ==GalleryConfig.video.info
+    ==video_tag("#{GalleryConfig.video.overview}", width: "100%", controls: "true", class: "introvideo", id: "welcomeVideo")

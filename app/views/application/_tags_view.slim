@@ -1,0 +1,24 @@
+div.tags.mouseoveredit id="tagsDisplay"
+  ==render partial: "notebook_metadata", locals: { notebook: notebook }
+  br
+  div.tagRow
+    span.tagsTitle Tags:
+    -if notebook.tags.empty?
+      span.sr-only No Tags
+    -notebook.tags.each do |tag|
+      a href="#{tag_path(tag.tag)}"
+        span.label.tag style="background-color: #{color_for(tag.tag)}"
+          span.sr-only Tag of
+          span.hidden aria-hidden="true" #{":"}
+          span.sr-only #{" \""}
+          ==tag.tag
+          span.sr-only #{"\""}
+      span.hidden aria-hidden="true" #{" "}
+    -if @user.member?
+      a.edit-icon href="#" id="tagsEditPencil"
+        span.glyphicon.glyphicon-pencil.tooltips aria-hidden="true" title="Add or edit tags"
+        span.sr-only
+          -if notebook.tags.count > 0
+            | Edit tags
+          -else
+            | Add tags

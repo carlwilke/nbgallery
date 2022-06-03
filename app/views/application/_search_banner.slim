@@ -1,0 +1,126 @@
+-filters = []
+-search = ""
+-raw_query = params[:q] ? params[:q].split("") : []
+-inQuote = false
+-raw_query.each_with_index do |char,index|
+  -if char == "#{"\""}" && !inQuote
+    -inQuote = true
+  -elsif char == " " && inQuote
+    -raw_query[index] = "_"
+  -elsif char == "#{"\""}" && inQuote
+    -inQuote = false
+-query = raw_query.join.split(" ")
+-query.each do |term|
+  -term = term.gsub("_"," ")
+  -if !term.include? ":"
+    -search = search + " " + term
+  -else
+    -if (term.include? "user:") || (term.include? "owner:") || (term.include? "creator:") || (term.include? "updater:") || (term.include? "description:") || (term.include? "package:") || (term.include? "lang:") || (term.include? "tags:") ||  (term.include? "title:") || (term.include? "created:") || (term.include? "updated:")
+      -if (filters.include? term)
+        -next
+      -elsif (term.include? ":\"-")
+        -search = search + " " + term
+      -else
+        -filters.push(term)
+    -else
+      -search = search + " " + term
+div class=(filters.length > 0 ? "super-container" : "super-container no-filter")
+  div.content-container
+    div.sub-container
+      h1.search-title Search #{params[:q].blank? ? "" : "Results"}
+      form id="bigSearchBar" action="#{notebooks_path}" role="search"
+        div.form-group
+          input id="advancedSearch" name="q" type="hidden"
+          input.searchFieldBox.form-control placeholder="Search" type="search" data-oldvalue="#{search.strip}" value="#{search.strip}" tabindex="0"
+          input name="sort" type="hidden" value="score"
+          -params.each do |key, value|
+            -next if %w(id q sort ascending splat captures controller action partial_name ajax).include?(key)
+            -if value != nil
+              input type="hidden" name==CGI.escape_html(key) value==CGI.escape_html(value)
+            -else
+              input type="hidden" name==CGI.escape_html(key)
+          a id="filterToggle" href="#" type="button" aria-expanded=(filters.length > 0 ? "true" : "false")
+            i class=(filters.length > 0 ? "fa fa-chevron-down spin": "fa fa-chevron-down") aria-hidden="true"
+            span.add-filter-text aria-hidden="true" Advanced
+            i.fa.fa-filter aria-hidden="true"
+            span.sr-only Toggle Advanced Search Form
+          button.btn.search-submit tabindex="0"
+            span.glyphicon.glyphicon-search
+              span.sr-only Search
+      div id="addFilterFormContainer" class=(filters.length > 0 ? "expand" : "") style=(filters.length > 0 ? "display: block" : "display: none")
+        form.flex id="addFilterForm"
+          div
+            strong
+              | Field
+              span aria-hidden="true" #{":"}
+            select.form-control.sortDropDown id="filterFormType"
+              option disabled="disabled" selected="selected" Select Filter
+              option value="user" User
+              option value="owner" Owner
+              option value="creator" Creator
+              option value="updater" Updater
+              option value="description" Description
+              option value="package" Package
+              option value="lang" Language
+              option value="title" Title
+              option value="tags" Tag
+              option value="updated" Updated
+              option value="created" Created
+          div.no-header id="emptyfilterInclusionContainer"
+            input.form-control disabled="disabled"
+          div.no-header id="filterFormInclusionContainer" style="display: none"
+            label.sr-only for="filterFormInclusion" Choose nothing to include a filter of value, or choose "NOT" to exclude a filter of value
+            select.form-control.sortDropDown id="filterFormInclusion"
+              option selected="selected" value="" CONTAINS
+              option value="-" DOESN'T CONTAIN
+          div.no-header id="dateFilterFormInclusionContainer" style="display: none"
+            label.sr-only for="dateFilterFormInclusion" Choose how to apply the date filter
+            select.form-control.sortDropDown id="dateFilterFormInclusion"
+              option selected="selected" value="" On
+              option value=">" Starting on
+              option value="<" Before
+          div id="filterFormValueContainer"
+            strong
+              | Value
+              span aria-hidden="true" #{":"}
+            input.form-control id="emptyfilterFormValue" disabled="disabled"
+            input.form-control id="filterFormValue" type="text" minlength="2" placeholder="Filter" style="display: none"
+            input.form-control id="dateFilterFormValue" type="date" minlength="6" placeholder="2020-12-30" style="display: none"
+          div.button-container.no-header
+            button.btn.btn-primary id="filterFormSubmit" Add Filter
+            button.btn.btn-success id="filterFormSubmitAndSearch" type="submit" Search
+      div.search-filters-super-container
+        div.search-filters-container
+          p.search-filters
+            strong
+              | Added Filters
+              span aria-hidden="true" #{":"}
+            div.tokenfield
+              div.token id="showDeprecatedToken"
+                form id="filterDeprecatedForm" method="get" action="#{url_for(:only_path => false)}"
+                  span.toggle-label Show Deprecated
+                  input id="deprecatedCheckbox" aria-label="Show Deprecated Notebooks" checked=(params[:show_deprecated] == "true"? "checked" : nil) name="show_deprecated" type="checkbox" value="true"
+                  -params.each do |key, value|
+                    -next if %w(id show_deprecated ascending splat captures controller action partial_name ajax).include?(key)
+                    -if value != nil
+                      input type="hidden" name==CGI.escape_html(key) value==CGI.escape_html(value)
+                    -else
+                      input type="hidden" name==CGI.escape_html(key)
+              -if @user.admin
+                div.token id="showPrivateToken"
+                  form id="filterPrivateNotebooksForm" method="get" action="#{url_for(:only_path => false)}"
+                    span.toggle-label Show Private
+                    input id="showPrivateNotebooksCheckbox" aria-label="Show Private Notebooks" checked=(params[:use_admin] == "true"? "checked" : nil)  name="use_admin" type="checkbox" value="true"
+                    -params.each do |key, value|
+                      -next if %w(id use_admin ascending splat captures controller action partial_name ajax).include?(key)
+                      -if value != nil
+                        input type="hidden" name==CGI.escape_html(key) value==CGI.escape_html(value)
+                      -else
+                        input type="hidden" name==CGI.escape_html(key)
+              -filters.each do |filter|
+                div.token
+                  span.token-label ==filter
+                  span.sr-only #{" "}
+                  a.close.tooltips.tooltipstered href="#" tab-index="-1" title="Delete search filter"
+                    span aria-hidden="true" &times;
+                    span.sr-only Delete search filter of "#{filter}"

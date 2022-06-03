@@ -1,0 +1,42 @@
+div.content-container
+  h1.center User Summary
+  br
+  div.row
+    div.col-md-6
+      div.panel.panel-primary
+        div.panel.panel-heading
+          h2.panel-title Top Users
+        table.table.tabular.centered-table
+          caption.sr-only Top Users
+          thead
+            tr
+              th User
+              th Contribution
+              th Percentile
+          tbody
+            -@top_users.each do |u|
+              -if u.user_rep_raw.to_i != 0
+                tr
+                  td
+                    a href="#{summary_user_path(u.user.id)}" #{u.user.user_name}
+                  td ==u.user_rep_raw.to_i
+                  td #{"%.1f" % (u.user_rep_pct || 0.0)}
+    div.col-md-6
+      div.panel.panel-primary
+        div.panel.panel-heading
+          h2.panel-title Top Authors
+        table.table.tabular.centered-table
+          caption.sr-only Top Authors
+          thead
+            tr
+              th Author
+              th Contribution
+              th Percentile
+          tbody
+            -@top_authors.each do |u|
+              -if u.author_rep_raw.to_i != 0
+                tr
+                  td
+                    a href="#{summary_user_path(u.user.id)}" #{u.user.user_name}
+                  td ==u.author_rep_raw.to_i
+                  td #{"%.1f" % (u.author_rep_pct || 0.0)}

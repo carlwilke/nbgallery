@@ -1,0 +1,40 @@
+div.content-container.mobile-expanding
+  div.carousel-inner
+    div.item.active
+      ==image_tag("nbgallery_banner.png", aria: {"hidden": true}, class:"show", style:"display: none")
+      div.content-container
+        div.carousel-caption
+          h1 Recommended for Me
+div.content-container id="recommendationsContainer"
+  -unless @groups.empty?
+    h2 Groups Recommended for Me
+    hr.divider
+    div.row
+      div.content-container
+        ul
+        -@groups.each do |group, count|
+          li.groupSearchResults
+            a href="#{url_for(group)}"
+              span.tooltips title="#{group.description}" #{group.name}
+              span.badge.searchResultGroup =count
+    br
+  -unless @tags.empty?
+    h2 Tags Recommended for Me
+    hr.divider
+    div.row
+      div.content-container
+        -@tags.each do |tag, count|
+          a.recommended-tag href="#{tag_path(tag)}"
+            span.label.tag style="background-color: #{color_for(tag)}" ==tag
+            span.badge.searchResultTag =count
+    br
+  -if @notebooks.empty?
+    div.content-container.center
+      div.no-notebooks
+        div.sad-face.show aria-hidden="true" style="display: none"
+          | :-(
+        | Sorry, no notebooks found
+  -else
+    h2 Notebooks Recommended for Me
+    hr
+    ==render partial: "notebooks", locals: { suggested_view: true }

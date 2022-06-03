@@ -1,0 +1,13 @@
+div.content-container
+  div.carousel.slide
+    div.carousel-inner
+      div.item.active
+        ==image_tag("python.png", aria: {"hidden": true}, class:"show", style:"display: none")
+        div.content-container
+          div.carousel-caption
+            h1 Python Best Practices
+            br
+            p The below notebook contains some best practices for using Python with this Jupyter instance
+  br
+  br
+  ==render partial: "notebook", locals: { jn: @notebook.notebook }
