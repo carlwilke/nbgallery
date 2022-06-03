@@ -25,6 +25,7 @@ gem 'jbuilder', '~> 2.0'
 # Gems for Notebook Gallery
 ############################
 
+# TODO: Configure for AAD OAuth2 instead
 gem 'acts_as_votable'
 gem 'bootstrap-sass'
 gem 'browser'

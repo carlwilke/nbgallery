@@ -10,6 +10,7 @@ site:
 # create user 'jupyter'@'localhost' identified by 'mypassword';
 # grant all on gallery.* to 'jupyter'@'localhost';
 #
+#TODO: Change to MariaDB
 mysql:
   database: gallery
   username: jupyter
