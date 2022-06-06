@@ -5,7 +5,9 @@ gem 'rails', '~> 4.2'
 #gem 'sprockets', '3.6.0' # 3.6.1 breaks all javascript by saying there's a invalid byte sequence
 gem 'sprockets', '3.7.2' # 3.7.2 seems ok
 # Use mysql as the database for Active Record
-gem 'mysql2', '>= 0.3.13', '< 0.5'
+# gem 'mysql2', '>= 0.3.13', '< 0.5'
+# Use MariaDB as the database for Active Record
+gem 'mariadb2', '0.10.0' # 0.10.0 seems ok
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0'
 # Use Uglifier as compressor for JavaScript assets
@@ -25,7 +27,6 @@ gem 'jbuilder', '~> 2.0'
 # Gems for Notebook Gallery
 ############################
 
-# TODO: Configure for AAD OAuth2 instead
 gem 'acts_as_votable'
 gem 'bootstrap-sass'
 gem 'browser'
@@ -45,6 +46,7 @@ gem 'omniauth-facebook'
 gem 'omniauth-github'
 gem 'omniauth-gitlab'
 gem 'omniauth-google-oauth2'
+gem 'omniauth-azure-oauth2'
 gem 'pry-rails'
 gem 'puma'
 gem 'rack-cors'
