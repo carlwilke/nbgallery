@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Rewite the entire file to use the new MariaDB data instead of MySQL
+# Create a new file called docker-entrypoint.sh with the correct data there
 # Wait until mysql is up and available, retrying 10 times with a 5 second wait
 MAX_TRIES=10
 TRIES=0
