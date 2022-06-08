@@ -1,4 +1,5 @@
 #!/bin/bash
+#Update with MariaDB data instead of MySQL
 
 GALLERY__MYSQL__HOST=${GALLERY__MYSQL__HOST:=localhost}
 GALLERY__MYSQL__PORT=${GALLERY__MYSQL__PORT:=3306}
