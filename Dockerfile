@@ -1,13 +1,15 @@
-FROM ruby:2.4
-# MAINTAINER team@nb.gallery
+FROM ruby:2.7
+LABEL maintainer=carlwilke@microsoft.com
+# team@nb.gallery
 
 # Update for MariaDB instead of MySQL
+
 # Install OS packages
 RUN \
   apt-get update && \
   apt-get upgrade -y && \
   apt-get install -y --no-install-recommends \
-    mariadb-server \
+    default-mysql-client \
     vim \
     libfuzzy-dev && \
   rm -rf /var/lib/apt/lists/*

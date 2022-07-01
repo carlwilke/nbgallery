@@ -5,9 +5,9 @@ gem 'rails', '~> 4.2'
 #gem 'sprockets', '3.6.0' # 3.6.1 breaks all javascript by saying there's a invalid byte sequence
 gem 'sprockets', '3.7.2' # 3.7.2 seems ok
 # Use mysql as the database for Active Record
-# gem 'mysql2', '>= 0.3.13', '< 0.5'
+gem 'mysql2', '>= 0.3.13', '< 0.5'
 # Use MariaDB as the database for Active Record
-gem 'mariadb2', '0.10.0' # 0.10.0 seems ok
+# gem 'mariadb2', '0.10.0' # 0.10.0 seems ok
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0'
 # Use Uglifier as compressor for JavaScript assets
@@ -26,6 +26,7 @@ gem 'jbuilder', '~> 2.0'
 ############################
 # Gems for Notebook Gallery
 ############################
+# Azure OAuth2 added
 
 gem 'acts_as_votable'
 gem 'bootstrap-sass'
@@ -76,7 +77,7 @@ gem 'sunspot_solr'
 
 # Nightly computation - similarities, suggestions, etc.
 gem 'activerecord-import'
-gem 'nmatrix'
+# gem 'nmatrix'
 gem 'ranker'
 gem 'tf-idf'
 

@@ -54,3 +54,6 @@ Here is some documentation on various features of nbgallery:
 ## Contributions
 
 Issues and pull requests are welcome.  For code contributions, please note that we use [rubocop](https://github.com/bbatsov/rubocop) ([our config](.rubocop.yml)), so please run `overcommit --install` in your project directory to activate the git commit hooks.
+
+## MTSIC Version
+Configured to be used within the MSTIC organization with addition of Azure AAD for user verification as well as change of MySQL database to a anaged MariaDB database

@@ -36,10 +36,10 @@ services:
   # Set EMAIL_PORT to '5025'
   # visit http://localhost:5080/ to see all emails that were sent by NBGallery during that run
   # Does not preserve data
-  #smtp:
-  #  image: gessnerfl/fake-smtp-server:latest
-  #  ports:
-  #    - "5080:5080"
+  smtp:
+    image: gessnerfl/fake-smtp-server:latest
+    ports:
+      - "5080:5080"
 
   ########################################
   # Notebook Gallery
@@ -55,11 +55,11 @@ services:
     depends_on:
       - "mysql"
       - "solr"
-      #- "smtp"
+      - "smtp"
     links:
       - "mysql"
       - "solr"
-      #- "smtp"
+      - "smtp"
     environment:
       GALLERY__MYSQL__HOST: mysql
       GALLERY__MYSQL__PORT: 3306
